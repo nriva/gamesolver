@@ -1,0 +1,69 @@
+.gametable {
+    display:table;
+    width: min-content;
+    border-collapse: collapse;
+}
+
+.gametablerow {
+    display:table-row;
+    border-collapse: collapse;
+    min-height: 72px;
+}
+
+.gametablecell {
+    display:table-cell;
+    min-width: 72px;
+    min-height: 72px;
+    width: 72px;
+    height: 72px;
+    
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    border-collapse: collapse;
+
+    padding-top: 0px;
+    padding-bottom: 0px;
+    overflow: hidden;
+
+    position: relative;
+
+}
+
+.highlight {
+    background-color: greenyellow;
+}
+
+.inputCell {
+    max-width: 3em;
+}
+
+.inputCell.hidden {
+    display: none;
+}
+
+
+.inputGenerate.hidden {
+    display: none;
+}
+
+
+
+.cellValue {
+    text-align: center;
+    font-size: xx-large;
+    padding: 0px;
+    position: absolute;
+    width: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.cellEditorLabel {
+    font-size: x-large;
+}
+
+#toolbar {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}

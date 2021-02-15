@@ -1,0 +1,168 @@
+<html>
+    <head>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+    </head>
+<body>
+
+  <div class="container">
+    <h1>Sudoku Generator & Solver</h1>
+    <div id="toolbar">
+      <button class="btn btn-primary" id="resetBtn">Reset</button>
+      <button class="btn btn-primary" id="solveBtn">Solve</button>
+      <button class="btn btn-primary" id="stopBtn">Stop</button>
+      <button class="btn btn-primary" id="pauseBtn">Pause</button>
+      <button class="btn btn-primary" id="stepBtn">Step</button>
+      <button class="btn btn-primary" id="editBtn" style="display: none">Edit</button>
+      <button class="btn btn-primary" id="generateBtn">Generate</button>&nbsp;<label class="inputGenerate hidden" for="generateHolesTxt">Holes:</label>&nbsp;<input class="inputGenerate hidden" type="text" id="generateHolesTxt">
+    </div>
+    <div>
+      <span>Round:</span><span id="roundNumber"></span><span id="solvedCells" style="display: none;"> - Solved <span id="solvedCellsNum"></span> cells</span>     &nbsp;<span id="solutionResult"></span>&nbsp;<span id="checkResult"></span>
+    </div>
+    <table>
+      <td>
+        <div class="gametable">
+          <div class="gametablerow">
+            <div class="gametablecell" id="cellCont11"><span class="cellValue" id="cell11"></span><input class="inputCell hidden" id=input11 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont12"><span class="cellValue" id="cell12"></span><input class="inputCell hidden" id=input12 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont13"><span class="cellValue" id="cell13"></span><input class="inputCell hidden" id=input13 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont14"><span class="cellValue" id="cell14"></span><input class="inputCell hidden" id=input14 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont15"><span class="cellValue" id="cell15"></span><input class="inputCell hidden" id=input15 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont16"><span class="cellValue" id="cell16"></span><input class="inputCell hidden" id=input16 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont17"><span class="cellValue" id="cell17"></span><input class="inputCell hidden" id=input17 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont18"><span class="cellValue" id="cell18"></span><input class="inputCell hidden" id=input18 maxlength="1" type=text ></div>
+            <div class="gametablecell" id="cellCont19"><span class="cellValue" id="cell19"></span><input class="inputCell hidden" id=input19 maxlength="1" type=text ></div>
+          </div>
+          
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell21"></span><input class="inputCell hidden" id=input21 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell22"></span><input class="inputCell hidden" id=input22 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell23"></span><input class="inputCell hidden" id=input23 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell24"></span><input class="inputCell hidden" id=input24 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell25"></span><input class="inputCell hidden" id=input25 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell26"></span><input class="inputCell hidden" id=input26 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell27"></span><input class="inputCell hidden" id=input27 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell28"></span><input class="inputCell hidden" id=input28 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell29"></span><input class="inputCell hidden" id=input29 maxlength="1" type=text ></div>
+          </div>
+            
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell31"></span><input class="inputCell hidden" id=input31 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell32"></span><input class="inputCell hidden" id=input32 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell33"></span><input class="inputCell hidden" id=input33 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell34"></span><input class="inputCell hidden" id=input34 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell35"></span><input class="inputCell hidden" id=input35 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell36"></span><input class="inputCell hidden" id=input36 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell37"></span><input class="inputCell hidden" id=input37 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell38"></span><input class="inputCell hidden" id=input38 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell39"></span><input class="inputCell hidden" id=input39 maxlength="1" type=text ></div>
+          </div>
+          
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell41"></span><input class="inputCell hidden" id=input41 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell42"></span><input class="inputCell hidden" id=input42 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell43"></span><input class="inputCell hidden" id=input43 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell44"></span><input class="inputCell hidden" id=input44 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell45"></span><input class="inputCell hidden" id=input45 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell46"></span><input class="inputCell hidden" id=input46 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell47"></span><input class="inputCell hidden" id=input47 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell48"></span><input class="inputCell hidden" id=input48 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell49"></span><input class="inputCell hidden" id=input49 maxlength="1" type=text ></div>
+          </div>
+          
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell51"></span><input class="inputCell hidden" id=input51 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell52"></span><input class="inputCell hidden" id=input52 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell53"></span><input class="inputCell hidden" id=input53 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell54"></span><input class="inputCell hidden" id=input54 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell55"></span><input class="inputCell hidden" id=input55 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell56"></span><input class="inputCell hidden" id=input56 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell57"></span><input class="inputCell hidden" id=input57 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell58"></span><input class="inputCell hidden" id=input58 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell59"></span><input class="inputCell hidden" id=input59 maxlength="1" type=text ></div>
+          </div>
+          
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell61"></span><input class="inputCell hidden" id=input61 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell62"></span><input class="inputCell hidden" id=input62 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell63"></span><input class="inputCell hidden" id=input63 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell64"></span><input class="inputCell hidden" id=input64 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell65"></span><input class="inputCell hidden" id=input65 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell66"></span><input class="inputCell hidden" id=input66 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell67"></span><input class="inputCell hidden" id=input67 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell68"></span><input class="inputCell hidden" id=input68 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell69"></span><input class="inputCell hidden" id=input69 maxlength="1" type=text ></div>
+          </div>
+          
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell71"></span><input class="inputCell hidden" id=input71 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell72"></span><input class="inputCell hidden" id=input72 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell73"></span><input class="inputCell hidden" id=input73 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell74"></span><input class="inputCell hidden" id=input74 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell75"></span><input class="inputCell hidden" id=input75 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell76"></span><input class="inputCell hidden" id=input76 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell77"></span><input class="inputCell hidden" id=input77 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell78"></span><input class="inputCell hidden" id=input78 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell79"></span><input class="inputCell hidden" id=input79 maxlength="1" type=text ></div>
+          </div>
+          
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell81"></span><input class="inputCell hidden" id=input81 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell82"></span><input class="inputCell hidden" id=input82 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell83"></span><input class="inputCell hidden" id=input83 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell84"></span><input class="inputCell hidden" id=input84 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell85"></span><input class="inputCell hidden" id=input85 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell86"></span><input class="inputCell hidden" id=input86 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell87"></span><input class="inputCell hidden" id=input87 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell88"></span><input class="inputCell hidden" id=input88 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell89"></span><input class="inputCell hidden" id=input89 maxlength="1" type=text ></div>
+          </div>
+          
+          <div class="gametablerow">
+            <div class="gametablecell"><span class="cellValue" id="cell91"></span><input class="inputCell hidden" id=input91 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell92"></span><input class="inputCell hidden" id=input92 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell93"></span><input class="inputCell hidden" id=input93 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell94"></span><input class="inputCell hidden" id=input94 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell95"></span><input class="inputCell hidden" id=input95 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell96"></span><input class="inputCell hidden" id=input96 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell97"></span><input class="inputCell hidden" id=input97 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell98"></span><input class="inputCell hidden" id=input98 maxlength="1" type=text ></div>
+            <div class="gametablecell"><span class="cellValue" id="cell99"></span><input class="inputCell hidden" id=input99 maxlength="1" type=text ></div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <!--
+        <div id="cellEditor" style="margin: 5px; display: none; font-size: x-large">
+        <table>
+          <tr>
+            <td class="cellEditorLabel">1&nbsp;<input id="cellCheck1" class="cellCkeck" type="checkbox"></td>
+            <td class="cellEditorLabel">2&nbsp;<input id="cellCheck2" class="cellCkeck" type="checkbox"></td>
+            <td class="cellEditorLabel">3&nbsp;<input id="cellCheck3" class="cellCkeck" type="checkbox"></td>
+          </tr>
+          <tr>
+            <td class="cellEditorLabel">4&nbsp;<input id="cellCheck4" class="cellCkeck" type="checkbox"></td>
+            <td class="cellEditorLabel">5&nbsp;<input id="cellCheck5" class="cellCkeck" type="checkbox"></td>
+            <td class="cellEditorLabel">6&nbsp;<input id="cellCheck6" class="cellCkeck" type="checkbox"></td>
+          </tr>
+          <tr>
+            <td class="cellEditorLabel">7&nbsp;<input id="cellCheck7" class="cellCkeck" type="checkbox"></td>
+            <td class="cellEditorLabel">8&nbsp;<input id="cellCheck8" class="cellCkeck" type="checkbox"></td>
+            <td class="cellEditorLabel">9&nbsp;<input id="cellCheck9" class="cellCkeck" type="checkbox"></td>
+          </tr>
+        </table>
+        <button id="btnConfirmEdit">Confirm</button>
+      </div>
+    -->
+    </td>
+  </table>
+  <small>Version 0.1.0</small>
+  </div>
+
+  
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-ygbV9kiqUc6oa4msXn9868pTtWMgiQaeYH7/t7LECLbyPA2x65Kgf80OJFdroafW" crossorigin="anonymous"></script>
+  <script src="main.js" type="application/javascript"></script>
+
+</body>
+</html>
