@@ -1,25 +1,45 @@
-import { GameSchemaSudoku } from "./game-schema";
-var GameSchemaGeneratorSudoku = /** @class */ (function () {
+"use strict";
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GameSchemaGeneratorSudoku = void 0;
+var game_schema_generator_1 = require("../game-types/game-schema-generator");
+var game_schema_1 = require("./game-schema");
+var game_schema_solver_1 = require("./game-schema-solver");
+var GameSchemaGeneratorSudoku = /** @class */ (function (_super) {
+    __extends(GameSchemaGeneratorSudoku, _super);
     function GameSchemaGeneratorSudoku(N, K) {
-        this.mat = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        var _this = _super.call(this) || this;
+        _this.solver = new game_schema_solver_1.GameSchemaSolverSudoku();
+        _this.mat = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]];
-        this.N = N;
-        this.K = K;
+        _this.N = N;
+        _this.K = K;
         // Compute square root of N
         var SRNd = Math.sqrt(N);
-        this.SRN = Math.floor(SRNd);
+        _this.SRN = Math.floor(SRNd);
+        return _this;
         //this.mat = new number[N][N]; 
     }
     GameSchemaGeneratorSudoku.prototype.generate = function () {
         this.fillValues();
-        var schema = new GameSchemaSudoku();
+        var schema = new game_schema_1.GameSchemaSudoku();
+        schema.createCells();
         for (var row = 0; row < 9; row++)
             for (var col = 0; col < 9; col++)
-                if (this.mat[row][col] === 0)
-                    schema.getCell(row, col).initValue(this.mat[row][col]);
-                else
-                    schema.getCell(row, col).assignValue(this.mat[row][col]);
+                schema.getCell(row, col).initValue(this.mat[row][col]);
         return schema;
     };
     GameSchemaGeneratorSudoku.prototype.fillValues = function () {
@@ -38,23 +58,26 @@ var GameSchemaGeneratorSudoku = /** @class */ (function () {
         }
     };
     /** Returns false if given 3 x 3 block contains num.  */
-    GameSchemaGeneratorSudoku.prototype.unUsedInBox = function (rowStart, colStart, num) {
-        for (var i = 0; i < this.SRN; i++) {
-            for (var j = 0; j < this.SRN; j++) {
+    /*
+    private unUsedInBox(rowStart: number, colStart: number, num: number): boolean {
+        for (let i = 0; i < this.SRN; i++) {
+            for (let j = 0; j < this.SRN; j++) {
                 if (this.mat[rowStart + i][colStart + j] === num) {
                     return false;
                 }
             }
         }
+
         return true;
-    };
+    }
+
     /**  Fill a 3 x 3 matrix. */
     GameSchemaGeneratorSudoku.prototype.fillBox = function (row, col) {
         var num;
         for (var i = 0; i < this.SRN; i++) {
             for (var j = 0; j < this.SRN; j++) {
                 num = this.randomGenerator(this.N);
-                while (!this.unUsedInBox(row, col, num)) {
+                while (this.solver.findInSquare(this.mat, row, col, num)) { /*this.unUsedInBox(row, col, num)*/
                     num = this.randomGenerator(this.N);
                 }
                 this.mat[row + i][col + j] = num;
@@ -63,34 +86,44 @@ var GameSchemaGeneratorSudoku = /** @class */ (function () {
     };
     // Random generator
     GameSchemaGeneratorSudoku.prototype.randomGenerator = function (num) {
-        return Math.floor((Math.random() * num + 1));
+        var n = Math.floor((Math.random() * num + 1));
+        if (n > num)
+            n = num;
+        return n;
     };
-    // Check if safe to put in cell
+    /**
+     * Check if safe to put in cell
+     */
     GameSchemaGeneratorSudoku.prototype.checkIfSafe = function (i, j, num) {
-        return (this.unUsedInRow(i, num) && this.unUsedInCol(j, num) && this.unUsedInBox(i - i % this.SRN, j - j % this.SRN, num));
+        return (!this.solver.findInRow(this.mat, i, num)
+            && !this.solver.findInCol(this.mat, j, num)
+            && !this.solver.findInSquare(this.mat, i, j, num));
     };
     // check in the row for existence
-    GameSchemaGeneratorSudoku.prototype.unUsedInRow = function (i, num) {
-        for (var j = 0; j < this.N; j++) {
+    /*
+    private unUsedInRow(i: number, num: number): boolean {
+        for (let j = 0; j < this.N; j++) {
             if (this.mat[i][j] === num) {
                 return false;
             }
         }
         return true;
-    };
+    }
+    */
     // check in the row for existence
-    GameSchemaGeneratorSudoku.prototype.unUsedInCol = function (j, num) {
-        for (var i = 0; i < this.N; i++) {
+    /*
+    private unUsedInCol(j: number, num: number) : boolean {
+        for (let i = 0; i < this.N; i++) {
             if (this.mat[i][j] === num) {
                 return false;
             }
         }
         return true;
-    };
+    }
+    */
     // A recursive function to fill remaining
     // matrix
     GameSchemaGeneratorSudoku.prototype.fillRemaining = function (i, j) {
-        // System.out.println(i+" "+j);
         if (j >= this.N && i < this.N - 1) {
             i = i + 1;
             j = 0;
@@ -149,6 +182,6 @@ var GameSchemaGeneratorSudoku = /** @class */ (function () {
         }
     };
     return GameSchemaGeneratorSudoku;
-}());
-export { GameSchemaGeneratorSudoku };
+}(game_schema_generator_1.GameSchemaGenerator));
+exports.GameSchemaGeneratorSudoku = GameSchemaGeneratorSudoku;
 //# sourceMappingURL=game-schema-generator.js.map

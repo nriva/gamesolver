@@ -1,3 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GameSchemaCheckerResult = void 0;
 var GameSchemaCheckerResult = /** @class */ (function () {
     function GameSchemaCheckerResult() {
         this.resultMsg = '';
@@ -25,5 +28,5 @@ var GameSchemaCheckerResult = /** @class */ (function () {
     });
     return GameSchemaCheckerResult;
 }());
-export { GameSchemaCheckerResult };
+exports.GameSchemaCheckerResult = GameSchemaCheckerResult;
 //# sourceMappingURL=game-schema-checker-result.js.map

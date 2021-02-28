@@ -1,15 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.GameCell = void 0;
 var GameCell = /** @class */ (function () {
     function GameCell() {
-        this.highlit = false;
+        this.highlighted = false;
     }
     GameCell.prototype.highlight = function (on) {
-        this.highlit = on;
-        return this.highlit;
+        this.highlighted = on;
+        return this.highlighted;
     };
-    GameCell.prototype.isHighlight = function () {
-        return this.highlit;
+    GameCell.prototype.isHighlighted = function () {
+        return this.highlighted;
     };
     return GameCell;
 }());
-export { GameCell };
+exports.GameCell = GameCell;
 //# sourceMappingURL=game-cell.js.map
