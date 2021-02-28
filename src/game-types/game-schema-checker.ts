@@ -1,9 +1,8 @@
 import { GameCell } from './game-cell';
 import { GameSchemaCheckerResult } from './game-schema-checker-result';
 
-export interface GameSchemaChecker {
+export interface GameSchemaChecker<T> {
 
-
-    check(cells: number[][], parameters?:{}): GameSchemaCheckerResult;
+    check(schema: T, parameters?: {} | null): GameSchemaCheckerResult;
 
 }

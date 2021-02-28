@@ -4,13 +4,58 @@ import { GameSchemaSolverSudoku } from './game-schema-solver';
 import $ from 'jquery';
 
 
-export class GameSchemaSudoku extends GameSchema {
+/**
+ * The container of the cell, with a few utilities
+ */
+export class GameSchemaSudoku extends GameSchema<GameCellSudoku> {
+    setOrigCells(row: number, col: number, value: number) {
+        this.origCellValues[row][col] = value;
+    }
+    setValues(matrix: number[][], onlyUnsolved: boolean=false) {
+        for(let r=0;r<9;r++)
+            for(let c=0;c<9;c++)
+                if(!onlyUnsolved || !this.cells[r][c].isSolved())
+                    this.cells[r][c].solveWithValue(matrix[r][c]);
+    }
+
+    copyFrom(other: GameSchemaSudoku) {
 
 
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                this.cells[i][j].copyFrom(other.cells[i][j]);
+            }
+        }
+
+    }
+    dump(): string[] {
+
+        const rows: string[] = [];
+        for (let i = 0; i < 9; i++) {
+            let line = "";
+            for (let j = 0; j < 9; j++) {
+                line += String(this.cells[i][j].getValue());
+            }
+            rows.push(line);
+        }
+
+        return rows;
+
+    }
+    loadFrom(testCase: string[]) {
 
 
+            for (let i = 0; i < 9; i++) {
+                const line = testCase[i];
+                for (let j = 0; j < 9; j++) {
+                    this.origCellValues[i][j] = Number(line.charAt(j));
+                }
+            }
+
+        this.initCells(this.origCellValues);
+    }
     /**
-     * Celle effettive
+     * The cells
      */
     private cells!: GameCellSudoku[][];
 
@@ -21,7 +66,7 @@ export class GameSchemaSudoku extends GameSchema {
 
 
     // Esempio di partenza
-    private startupCells: number[][] = [
+    private demoCellValues: number[][] = [
     [5, 3, 0, 0, 7, 0, 0, 0, 0],
     [6, 0, 0, 1, 9, 5, 0, 0, 0],
     [0, 9, 8, 0, 0, 0, 0, 6, 0],
@@ -34,7 +79,7 @@ export class GameSchemaSudoku extends GameSchema {
 
 
     // Celle prima dell'inizio della soluzione
-    private origCells: number[][] = [
+    private origCellValues: number[][] = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0]
         , [0, 0, 0, 0, 0, 0, 0, 0, 0]
         , [0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -46,26 +91,38 @@ export class GameSchemaSudoku extends GameSchema {
         , [0, 0, 0, 0, 0, 0, 0, 0, 0]
     ];
 
-    private solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
+    //private solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
 
 
-    constructor() {
+    constructor(demo: boolean = false) {
 
         super();
         this.rowNumber = 9;
         this.colNumber = 9;
-        for (let i = 0; i < 9; i++) {
-            for (let j = 0; j < 9; j++) {
-                this.origCells[i][j] = this.startupCells[i][j];
+        if(demo) {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    this.origCellValues[i][j] = this.demoCellValues[i][j];
+                }
             }
-        }
 
-        this.initCells(this.origCells);
+        }
+        this.initCells(this.origCellValues);
     }
 
     public getCell(row:number, col:number): GameCellSudoku {
         return this.cells[row][col];
     }
+
+    public getCellValue(row:number, col:number) : number {
+        return this.cells[row][col].getValue();
+    }
+
+    public getCellValueSet(row:number, col:number) : number[] {
+        return this.cells[row][col].getValueSet();
+    }
+
+
 
     private initCellsValue(values: number[][]) {
         for (let r = 0; r < 9; r++) {
@@ -80,7 +137,7 @@ export class GameSchemaSudoku extends GameSchema {
         this.initCellsValue(origCells);
     }
 
-    private createCells(): GameCellSudoku[][] {
+    public createCells(): GameCellSudoku[][] {
         const cells: GameCellSudoku[][] = new Array(9);
         for (let i = 0; i < 9; i++) {
             cells[i] = new Array(9);
@@ -92,113 +149,26 @@ export class GameSchemaSudoku extends GameSchema {
     }
 
 
-    public getCellValueRep(row: number, col: number): string | null {
-        const values = this.getCellValuesRep(row, col);
-        const value = this.cells[row][col].getValue();
-        return `${ value === 0 ? '' : String(value)}${values}`;
-    }
-
-    public getCellValuesRep(row: number, col: number): string | null {
-        let html = '';
-        const values = this.cells[row][col].getValues();
-        if (values.length > 0) {
-
-            let dim = 3;
-            let fontSize="xx-small";
-            if(values.length<=4) {
-                dim = 2;
-                fontSize="x-small";
-            }
-
-            fontSize = "medium";
-            let r = 0;
-            let c = 0;
-            html = `<table style="font-size: ${fontSize}; margin-left: auto; margin-right: auto; width:100%">`;
-
-            for(let index=0;index<dim*dim;index++)  {
-
-                let value = '';
-
-                if(index<values.length)
-                    value = String(values[index]);
-
-                c = index % dim;
-                r = Math.floor( index / dim);
-                if(c===0)
-                    html += '<tr>';
-                html += `<td style="text-align: center">${value}</td>`;
-                if(c===dim-1)
-                    html += '</tr>';
-            }
-
-            html += '</table>';
-        }
-        return html;
-    }
 
     public getCellHighlight(row: number, col: number): boolean {
-        return this.cells[row][col].isHighlight();
+        return this.cells[row][col].isHighlighted();
     }
 
 
 
     public resetCells() {
-        this.round = 0;
+        //this.round = 0;
         this.cells = this.createCells();
-        this.stopped = false;
+        //this.stopped = false;
     }
 
     public resetCellsToOrig() {
-        this.round = 0;
-        this.initCellsValue(this.origCells);
-        this.stopped = false;
+        //this.round = 0;
+        this.initCellsValue(this.origCellValues);
+        //this.stopped = false;
     }
 
-    private _solvedCells = 0;
-
-    public solvedCells(): number {
-        return this._solvedCells;
-    }
-
-
-
-    public step(): void {
-
-        if (this.stopped) { return; }
-
-        for (let r = 0; r < 9; r++) {
-            for (let c = 0; c < 9; c++) {
-                this.cells[r][c].highlight(false);
-            }
-        }
-
-        const workCells: GameCellSudoku[][] = this.createCells();
-        this._solvedCells = this.solver.step(this.cells, workCells);
-
-        this.solved = true;
-        for (let r = 0; r < 9 && this.solved; r++) {
-            for (let c = 0; c < 9 && this.solved; c++) {
-                if (this.cells[r][c].getValue() === 0 /*|| this.cells[r][c].getValues().length > 0*/) {
-                    this.solved = false;
-                }
-            }
-        }
-
-        this.round++;
-
-        if (!(!this.solved && this.round <= this.MAX_ROUNDS && this._solvedCells > 0)) {
-
-            this.solving = false;
-            this.stopped = true;
-
-            this.lastRound(this._solvedCells > 0);
-        }
-
-    }
-
-
-
-    getValues(): number[][] {
+    public getValues(): number[][] {
 
         const values: number[][] = Array(9);
         for (let i = 0; i < 9; i++) {
@@ -244,7 +214,7 @@ export class GameSchemaSudoku extends GameSchema {
             $('#cellCheck'+cell.getValue()).prop('checked', true);
 
         } else {
-            cell.getValues().forEach(
+            cell.getValueSet().forEach(
                 (elem,i) => {
                     $('#cellCheck'+elem).prop('checked', true);
                 }
@@ -264,6 +234,31 @@ export class GameSchemaSudoku extends GameSchema {
     public initialize(): void {
         throw new Error('Method not implemented.');
     }
+
+    public clone(): GameSchemaSudoku {
+
+        const schema = new GameSchemaSudoku();
+
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+
+                schema.cells[row][col] = this.cells[row][col].clone() as GameCellSudoku;
+            }
+        }
+        return schema;
+    }
+
+
+    prepareForStep() {
+
+
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                this.cells[i][j].highlight(false);
+            }
+        }
+    }
+
 
 }
 

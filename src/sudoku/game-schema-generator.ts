@@ -1,8 +1,9 @@
 import { GameSchema } from "../game-types/game-schema";
+import { GameSchemaGenerator } from "../game-types/game-schema-generator";
 import { GameSchemaSudoku } from "./game-schema";
 import { GameSchemaSolverSudoku } from "./game-schema-solver";
 
-export class GameSchemaGeneratorSudoku  {
+export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSudoku>  {
 
 
     private solver:  GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
@@ -19,6 +20,7 @@ export class GameSchemaGeneratorSudoku  {
 
     constructor(N: number, K: number) {
 
+        super();
         this.N = N;
         this.K = K;
 
@@ -29,12 +31,15 @@ export class GameSchemaGeneratorSudoku  {
         //this.mat = new number[N][N]; 
     }
 
-    public generate(): GameSchema {
+    public generate(): GameSchemaSudoku {
         this.fillValues();
         const schema = new GameSchemaSudoku();
+        schema.createCells()
         for(let row=0;row<9;row++)
-            for(let col=0;col<9;col++)
+            for(let col=0;col<9;col++) {
                 schema.getCell(row,col).initValue(this.mat[row][col]);
+                schema.setOrigCells(row,col,this.mat[row][col]);
+            }
         return schema;
     }
 
@@ -173,17 +178,18 @@ export class GameSchemaGeneratorSudoku  {
     private removeKDigits(): void {
         let count = this.K;
         while (count !== 0) {
-            const cellId = this.randomGenerator(this.N * this.N);
+            const cellId = this.randomGenerator(this.N * this.N)-1;
 
             // System.out.println(cellId);
             // extract coordinates i and j
             const i =  Math.floor(cellId / this.N);
-            let j = cellId % 9;
+            const j = cellId % 9;
             /*
             if (j !== 0) {
                 j = j - 1;
             }*/
 
+            // console.log(`putting hole in ${i}, ${j}`)
             if (this.mat[i][j] !== 0) {
                 count--;
                 this.mat[i][j] = 0;

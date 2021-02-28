@@ -1,12 +1,13 @@
 {
   "name": "gamesolver",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "npx webpack",
     "startdev": "npx webpack serve",
-    "serve": "node .\\serve.js"
+    "serve": "node .\\serve.js",
+    "test": "node .\\src\\test.js"
   },
   "author": "",
   "license": "ISC",

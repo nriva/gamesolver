@@ -1,7 +1,7 @@
 const ctx: Worker = self as any;
 
 class SieveOfEratosthenes {
-  
+
     calculate(limit: number) {
 
       const sieve = [];

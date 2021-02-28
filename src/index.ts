@@ -6,10 +6,14 @@ import { GameSchemaGeneratorSudoku } from "./sudoku/game-schema-generator";
 import { GameSchemaSolverSudoku } from "./sudoku/game-schema-solver";
 import css from "./style.css";
 import PrimeWorker from "worker-loader!./sudoku/worker";
+import { GameCellSudoku } from "./sudoku/game-cell";
+import { GameSchemaManagerSodoku } from "./sudoku/game-schema-manager";
 
 
-let schema: GameSchema = new GameSchemaSudoku();
-let solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
+let schema: GameSchemaSudoku = new GameSchemaSudoku(true);
+const solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
+
+let schemaManager : GameSchemaManagerSodoku = new GameSchemaManagerSodoku(schema);
 
 
 
@@ -33,9 +37,9 @@ let startGeneration : boolean | null = null;
 
 function loadAllValues() {
 
-    $('#roundNumber').text(schema.getRoundNumber());
+    $('#roundNumber').text(solver.getStepNumber());
 
-    const solvedCells = schema.solvedCells();
+    const solvedCells = solver.getLastSolvedCells();
     if(solvedCells>0) {
         $('#solvedCells').css('display','inline');
         $('#solvedCellsNum').text(solvedCells);
@@ -46,7 +50,7 @@ function loadAllValues() {
     for(let row=0;row<schema.getRowNumber();row++)
         for(let col=0;col<schema.getColNumber();col++)
         {
-            const value : string | null = schema.getCellValueRep(row,col);
+            const value : string | null = schemaManager.getCellValueRep(row,col);
             if(value!=null)
             {
                 $(`#cell${row+1}${col+1}`).html(value);
@@ -63,6 +67,13 @@ function loadAllValues() {
 function resetBtnClick() {
     schema.resetCellsToOrig();
     loadAllValues();
+    solver.reset();
+    solving = false;
+    solvingPaused = false;
+    solvingStopped = false;
+    $('#solutionResult').text('');
+    $('#solvedCells').css('display','none');
+    $('#roundNumber').text('0');
 }
 
 function solveBtnClick() {
@@ -100,7 +111,6 @@ function generateBtnClick() {
 
     let val : number = 0;
     if(startGeneration) {
-        
         val = Number($('#generateHolesTxt').val());
         if(isNaN(val))
             return;
@@ -112,6 +122,7 @@ function generateBtnClick() {
 
     const generator = new GameSchemaGeneratorSudoku(9, val);
     schema = generator.generate();
+    schemaManager = new GameSchemaManagerSodoku(schema);
     loadAllValues();
 }
 
@@ -130,25 +141,25 @@ function solveGame(): void {
 }
 
 function stepGame(): void {
-    schema.step();
+    solver.step(schema);
     loadAllValues();
 
-    if(schema.isSolved() || schema.isStopped()) {
+    if(solver.isSolved() || solver.isStopped()) {
         solving = false;
-        $('#solutionResult').text(" - " + schema.solutionResult);
+        $('#solutionResult').text("- " + solver.getSolutionResult());
     }
     if (solving) {
-        setTimeout(() => stepGame(), 1000);
+        setTimeout(() => stepGame(), 100);
      }
 }
+
 class SolutionHandler implements GameSolutionHandler {
     handleResult(result: GameSolutionResult): void {
         throw new Error("Method not implemented.");
     }
-    
 }
 
-const colutionHandler: SolutionHandler = new SolutionHandler();
+//const solutionHandler: SolutionHandler = new SolutionHandler();
 
 
 

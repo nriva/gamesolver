@@ -1,77 +1,85 @@
 import { GameSchemaChecker } from "../game-types/game-schema-checker";
 import { GameSchemaCheckerResult } from "../game-types/game-schema-checker-result";
+import { GameSchemaSudoku } from "./game-schema";
 
 
-export class GameSchemaCheckerSudoku implements GameSchemaChecker {
+export class GameSchemaCheckerSudoku implements GameSchemaChecker<GameSchemaSudoku> {
 
     private incomplete: boolean = false;
 
+    private resultMessage: string = "";
 
-    public check(cells: number[][], parameters?: any): GameSchemaCheckerResult {
+    public check(schema: GameSchemaSudoku, incomplete: boolean=false): GameSchemaCheckerResult {
+        return this.checkMatrix(schema.getValues(), incomplete);
+    }
 
-        this.incomplete = parameters.incomplete;
+    public checkMatrix(matrix: number[][], incomplete: boolean=false): GameSchemaCheckerResult {
+
+        this.incomplete =incomplete;
 
         let error = false;
-        let result: GameSchemaCheckerResult = new GameSchemaCheckerResult();
+        const result: GameSchemaCheckerResult = new GameSchemaCheckerResult();
 
         // this.checkResult = 'Checking rows...';
-        for (let r = 0; r < 9; r++) {
+        for (let r = 0; r < 9 && !error; r++) {
 
             const positions  = this.getRowPositions(r);
-            result = this.chekPostions(cells, r, positions, 'row');
-            error = error || result.error;
+            error = this.checkPostions(matrix, r, positions, 'row');
         }
         // this.checkResult = 'Checking columns...';
         if (!error) {
-            for (let c = 0; c < 9; c++) {
+            for (let c = 0; c < 9 && !error; c++) {
                 const positions  = this.getColPositions(c);
-                result = this.chekPostions(cells, c, positions, 'column');
-                error = error || result.error;
+                error = this.checkPostions(matrix, c, positions, 'column');
             }
         }
         // this.checkResult = 'Checking squares...';
         if (!error) {
-            for (let r = 0; r < 3; r++) {
-                for (let c = 0; c < 3; c++) {
+            for (let r = 0; r < 3 && !error; r++) {
+                for (let c = 0; c < 3 && !error; c++) {
                     const positions  = this.getSquarePositions(r, c);
-                    result = this.chekPostions(cells, '${r},${c}', positions, 'square');
-                    error = error || result.error;
+                    error = this.checkPostions(matrix, '${r},${c}', positions, 'square');
                 }
             }
         }
         if (!error) {
             result.error = false;
             result.resultMessage = 'Checked!';
+        } else {
+            result.error = true;
+            result.resultMessage = this.resultMessage;
         }
+
 
         return result;
     }
 
-    chekPostions(cells: number[][], origin: any, positions: {row: number, col: number}[], checkTypeMsg: string)
-                    : GameSchemaCheckerResult {
+    private checkPostions(matrix: number[][], origin: any, positions: {row: number, col: number}[], checkTypeMsg: string): boolean {
         const counters = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        const r = new GameSchemaCheckerResult();
-        r.error = true;
+        let error = false;
 
         // tslint:disable-next-line: prefer-for-of
         for (let p = 0; p < positions.length; p++) {
-            counters[ cells[ positions[p].row ][ positions[p].col] ]++;
+
+            //console.log(`${checkTypeMsg} ${positions[p].row} , ${positions[p].col}`);
+            counters[ matrix[positions[p].row][positions[p].col] ]++;
         }
 
         if (counters[0] > 0 && !this.incomplete) {
-            r.resultMessage = 'Row ${r} not completely solved';
-            r.error = true;
-            return r;
+            this.resultMessage = `${checkTypeMsg} ${origin} not completely solved`;
+            error = true;
         }
 
-        const wrongindex = counters.findIndex( (value, index, arr) => index === 0 ? false : value > 1);
-        if (wrongindex !== -1) {
-            r.resultMessage = `Number ${wrongindex} in present more than once in ${checkTypeMsg} ${origin}`;
-            r.error = true;
-            return r;
+        if(!error) {
+            const wrongindex = counters.findIndex( (value, index, arr) => index === 0 ? false : value > 1);
+            if (wrongindex !== -1) {
+                this.resultMessage = `Number ${wrongindex} in present more than once in ${checkTypeMsg} ${origin}`;
+                error = true;
+            }
         }
 
-        return r;
+        return error;
+
     }
 
 

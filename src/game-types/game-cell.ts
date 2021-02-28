@@ -1,16 +1,16 @@
 export class GameCell {
 
-    protected highlit: boolean = false;
+    protected highlighted: boolean = false;
 
     public highlight(on: boolean):boolean {
-        this.highlit = on;
+        this.highlighted = on;
 
-        return this.highlit;
+        return this.highlighted;
     }
 
-    public isHighlight():boolean {
+    public isHighlighted():boolean {
 
-        return this.highlit;
+        return this.highlighted;
     }
 
 
