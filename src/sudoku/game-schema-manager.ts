@@ -1,10 +1,8 @@
 import { GameSchemaManager } from "../game-types/game-schema-manager";
-import { GameSchema } from "../game-types/game-schema";
 import { GameSchemaSudoku } from "./game-schema";
 import { GameCellSudoku } from "./game-cell";
 
-export class GameSchemaManagerSodoku extends GameSchemaManager< GameCellSudoku, GameSchemaSudoku> {
-
+export class GameSchemaManagerSodoku extends GameSchemaManager<GameCellSudoku, GameSchemaSudoku> {
 
     private schema: GameSchemaSudoku;
 
@@ -13,10 +11,13 @@ export class GameSchemaManagerSodoku extends GameSchemaManager< GameCellSudoku, 
         this.schema = schema;
     }
 
-    public getCellValueRep(row: number, col: number): string | null {
+    public getCellValueRep(row: number, col: number, value: number=0): string | null {
+        if(value>0) {
+            return String(value);
+        }
         const values = this.getCellValuesRep(row, col);
-        const value = this.schema.getCellValue(row, col);
-        return `${ value === 0 ? '' : String(value)}${values}`;
+        const _value = this.schema.getCellValue(row, col);
+        return `${ _value === 0 ? '' : String(_value)}${values}`;
     }
 
     public getCellValuesRep(row: number, col: number): string | null {
@@ -30,7 +31,6 @@ export class GameSchemaManagerSodoku extends GameSchemaManager< GameCellSudoku, 
                 dim = 2;
                 fontSize="x-small";
             }
-
             fontSize = "medium";
             let r = 0;
             let c = 0;

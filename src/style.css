@@ -27,12 +27,21 @@
     overflow: hidden;
 
     position: relative;
-
 }
 
 .highlight {
     background-color: greenyellow;
 }
+
+.tried {
+    background-color: orange;
+}
+
+.failed {
+    background-color: red;
+}
+
+
 
 .inputCell {
     max-width: 3em;
@@ -42,12 +51,9 @@
     display: none;
 }
 
-
 .inputGenerate.hidden {
     display: none;
 }
-
-
 
 .cellValue {
     text-align: center;

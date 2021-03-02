@@ -30,7 +30,6 @@ class SieveOfEratosthenes {
       });
 
       return primes;
-
     }
 
 }

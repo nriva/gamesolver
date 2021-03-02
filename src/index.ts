@@ -5,8 +5,8 @@ import { GameSchemaSudoku } from "./sudoku/game-schema";
 import { GameSchemaGeneratorSudoku } from "./sudoku/game-schema-generator";
 import { GameSchemaSolverSudoku } from "./sudoku/game-schema-solver";
 import css from "./style.css";
-import PrimeWorker from "worker-loader!./sudoku/worker";
-import { GameCellSudoku } from "./sudoku/game-cell";
+// import PrimeWorker from "worker-loader!./sudoku/worker";
+import DeepSolveWorker from "worker-loader!./sudoku/deep-solver-worker";
 import { GameSchemaManagerSodoku } from "./sudoku/game-schema-manager";
 
 
@@ -17,11 +17,40 @@ let schemaManager : GameSchemaManagerSodoku = new GameSchemaManagerSodoku(schema
 
 
 
-const worker = new PrimeWorker();
+// const worker = new PrimeWorker();
+const worker = new DeepSolveWorker();
 
 worker.onmessage = (event) => {
-    $('#messages').text(event.data.primes);
-    console.log(event.data.primes);
+    if(event.data.eventType === 'success') {
+        schema.setValues(event.data.matrix);
+        loadAllValues();
+        $('#solutionResult').text("- " + event.data.solutionResult);
+    }
+    else {
+        const eventData = event.data.eventData;
+        console.log(`${event.data.eventType} ${eventData.row} ${eventData.col}`);
+
+        const rep: string|null = schemaManager.getCellValueRep(eventData.row, eventData.col, eventData.value);
+        if(rep!=null)
+            $(`#cell${eventData.row+1}${eventData.col+1}`).html(rep);
+
+
+        $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('highlight');
+        $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('tried');
+        $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('failed');
+
+        if(event.data.eventType === 'tryValue') {
+
+            if(!$(`#cell${eventData.row+1}${eventData.col+1}`).parent().hasClass('highlight'))
+                $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('tried')
+        } else if(event.data.eventType === 'setValue') {
+            $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('highlight');
+        } else if(event.data.eventType === 'undoValue') {
+            if(!$(`#cell${eventData.row+1}${eventData.col+1}`).parent().hasClass('highlight'))
+                $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('failed');
+        }
+
+    }
 };
 
 
@@ -54,6 +83,9 @@ function loadAllValues() {
             if(value!=null)
             {
                 $(`#cell${row+1}${col+1}`).html(value);
+
+                $(`#cell${row+1}${col+1}`).parent().removeClass('tried');
+                $(`#cell${row+1}${col+1}`).parent().removeClass('failed');
 
                 if(schema.getCellHighlight(row,col))
                     $(`#cell${row+1}${col+1}`).parent().addClass('highlight');
@@ -144,10 +176,17 @@ function stepGame(): void {
     solver.step(schema);
     loadAllValues();
 
-    if(solver.isSolved() || solver.isStopped()) {
+
+    if(solver.isSolved()) {
         solving = false;
         $('#solutionResult').text("- " + solver.getSolutionResult());
+    } else if(solver.isStopped()) {
+        solving = false;
+        const matrix = schema.getValues();
+        console.log('starting worker...')
+        worker.postMessage({ 'matrix': matrix });
     }
+
     if (solving) {
         setTimeout(() => stepGame(), 100);
      }

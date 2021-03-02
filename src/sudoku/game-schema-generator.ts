@@ -2,6 +2,7 @@ import { GameSchema } from "../game-types/game-schema";
 import { GameSchemaGenerator } from "../game-types/game-schema-generator";
 import { GameSchemaSudoku } from "./game-schema";
 import { GameSchemaSolverSudoku } from "./game-schema-solver";
+import { findInCol, findInRow, findInSquare } from "./sudoku-util";
 
 export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSudoku>  {
 
@@ -9,34 +10,32 @@ export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSud
     private solver:  GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
 
 
-    private N: number; // number of columns/rows.
-    private SRN: number; // square root of N
-    private K: number; // No. Of missing digits
+    private size: number;
+    // Size of an inner square
+    private squareSize: number;
+    private missingDigits: number;
 
     public mat: number[][] = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]];
 
 
-    constructor(N: number, K: number) {
+    constructor(size: number, missingDigits: number) {
 
         super();
-        this.N = N;
-        this.K = K;
+        this.size = size;
+        this.missingDigits = missingDigits;
 
-        // Compute square root of N
-        const SRNd = Math.sqrt(N);
-        this.SRN = Math.floor(SRNd);
-
-        //this.mat = new number[N][N]; 
+        const s = Math.sqrt(size);
+        this.squareSize = Math.floor(s);
     }
 
     public generate(): GameSchemaSudoku {
         this.fillValues();
         const schema = new GameSchemaSudoku();
         schema.createCells()
-        for(let row=0;row<9;row++)
-            for(let col=0;col<9;col++) {
+        for(let row=0;row<this.size;row++)
+            for(let col=0;col<this.size;col++) {
                 schema.getCell(row,col).initValue(this.mat[row][col]);
                 schema.setOrigCells(row,col,this.mat[row][col]);
             }
@@ -48,43 +47,27 @@ export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSud
         this.fillDiagonal();
 
         // Fill remaining blocks
-        this.fillRemaining(0, this.SRN);
+        this.fillRemaining(0, this.squareSize);
 
         // Remove Randomly K digits to make game
         this.removeKDigits();
     }
 
-    /** Fill the diagonal SRN number of SRN x SRN matrices  */
     private fillDiagonal(): void {
 
-        for (let i = 0; i < this.N; i = i + this.SRN) {
+        for (let i = 0; i < this.size; i = i + this.squareSize) {
             // for diagonal box, start coordinates->i==j 
             this.fillBox(i, i);
         }
     }
 
-    /** Returns false if given 3 x 3 block contains num.  */
-    /*
-    private unUsedInBox(rowStart: number, colStart: number, num: number): boolean {
-        for (let i = 0; i < this.SRN; i++) {
-            for (let j = 0; j < this.SRN; j++) {
-                if (this.mat[rowStart + i][colStart + j] === num) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**  Fill a 3 x 3 matrix. */
     private fillBox(row: number, col: number): void {
         let num;
-        for (let i = 0; i < this.SRN; i++) {
-            for (let j = 0; j < this.SRN; j++) {
-                num = this.randomGenerator(this.N);
-                while (this.solver.findInSquare(this.mat, row, col, num)) {  /*this.unUsedInBox(row, col, num)*/
-                   num = this.randomGenerator(this.N);
+        for (let i = 0; i < this.squareSize; i++) {
+            for (let j = 0; j < this.squareSize; j++) {
+                num = this.randomGenerator(this.size);
+                while (findInSquare(this.mat, row, col, num)) {
+                   num = this.randomGenerator(this.size);
                 }
                 this.mat[row + i][col + j] = num;
             }
@@ -102,66 +85,40 @@ export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSud
      * Check if safe to put in cell
      */
     private checkIfSafe(i: number, j: number, num: number): boolean {
-        return (!this.solver.findInRow(this.mat, i, num)
-                    && !this.solver.findInCol(this.mat, j, num)
-                    && !this.solver.findInSquare(this.mat, i, j, num));
+        return (!findInRow(this.mat, i, num)
+                    && !findInCol(this.mat, j, num)
+                    && !findInSquare(this.mat, i, j, num));
     }
 
-    // check in the row for existence
-    /*
-    private unUsedInRow(i: number, num: number): boolean {
-        for (let j = 0; j < this.N; j++) {
-            if (this.mat[i][j] === num) {
-                return false;
-            }
-        }
-        return true;
-    }
-    */
-
-    // check in the row for existence
-    /*
-    private unUsedInCol(j: number, num: number) : boolean {
-        for (let i = 0; i < this.N; i++) {
-            if (this.mat[i][j] === num) {
-                return false;
-            }
-        }
-        return true;
-    }
-    */
-
-    // A recursive function to fill remaining
-    // matrix
     private fillRemaining(i: number, j: number): boolean {
 
-        if (j >= this.N && i < this.N - 1) {
+        if (j >= this.size && i < this.size - 1) {
             i = i + 1;
             j = 0;
         }
-        if (i >= this.N && j >= this.N) {
+        if (i >= this.size && j >= this.size) {
             return true;
         }
 
-        if (i < this.SRN) {
-            if (j < this.SRN) {
-                j = this.SRN;
+        if (i < this.squareSize) {
+            if (j < this.squareSize) {
+                j = this.squareSize;
             }
-        } else if (i < this.N - this.SRN) {
-            if (j === Math.floor(i / this.SRN) * this.SRN) {
-                j = j + this.SRN;
+        } else if (i < this.size - this.squareSize) {
+            if (j === Math.floor(i / this.squareSize) * this.squareSize) {
+                j = j + this.squareSize;
             }
         } else {
-            if (j === this.N - this.SRN) {
+            if (j === this.size - this.squareSize) {
                 i = i + 1;
                 j = 0;
-                if (i >= this.N) {
+                if (i >= this.size) {
                     return true;
                 }
             }
         }
 
-        for (let num = 1; num <= this.N; num++) {
+        for (let num = 1; num <= this.size; num++) {
             if (this.checkIfSafe(i, j, num)) {
                 this.mat[i][j] = num;
                 if (this.fillRemaining(i, j + 1)) {
@@ -176,13 +133,13 @@ export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSud
     // Remove the K no. of digits to
     // complete game
     private removeKDigits(): void {
-        let count = this.K;
+        let count = this.missingDigits;
         while (count !== 0) {
-            const cellId = this.randomGenerator(this.N * this.N)-1;
+            const cellId = this.randomGenerator(this.size * this.size)-1;
 
             // System.out.println(cellId);
             // extract coordinates i and j
-            const i =  Math.floor(cellId / this.N);
+            const i =  Math.floor(cellId / this.size);
             const j = cellId % 9;
             /*
             if (j !== 0) {

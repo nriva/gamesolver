@@ -1,3 +1,4 @@
+import { DeepSolveMatrix } from "./sudoku/deep-solver-worker";
 import { GameSchemaSudoku } from "./sudoku/game-schema";
 import { GameSchemaSolverSudoku } from "./sudoku/game-schema-solver";
 
@@ -16,8 +17,8 @@ function dump(matrix:number[][]): string[] {
 
 }
 
-const solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
-let solved = false;
+// const solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
+// let solved = false;
 
 // test demo
 //const schema: GameSchemaSudoku = new GameSchemaSudoku(true);
@@ -47,15 +48,17 @@ while(!solved) {
         break;
 }
 */
-solver.matrix =  schema.getValues();
-solver.deepSolve(0,0);
+const matrix =  schema.getValues();
+
+const task: DeepSolveMatrix = new DeepSolveMatrix(matrix);
+
+task.deepSolve(0,0);
 
 // console.log(solver.getSolutionResult());
 
-const rows: string[] = dump(solver.matrix);
-for(const row of rows) {
+const rows: string[] = dump(matrix);
+for(const row of rows)
     console.log(row);
-}
 
 
 

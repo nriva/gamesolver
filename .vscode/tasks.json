@@ -9,7 +9,18 @@
 				"$tsc-watch"
 			],
 			"group": "build",
-			"label": "tsc: watch - tsconfig.json"
+			"label": "tsc: watch"
+		},
+		{
+			"type": "typescript",
+			"tsconfig": "tsconfig.test.json",
+			"option": "watch",
+			"problemMatcher": [
+				"$tsc-watch"
+			],
+			"group": "build",
+			"label": "tsc: watch - test"
 		}
+
 	]
 }

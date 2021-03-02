@@ -17,12 +17,16 @@ export class GameCellSudoku extends GameCell {
         this.values = this.ALL_VALUES;
     }
 
+    /**
+     * Get the value of the cell.
+     */
     public getValue(): number {
         return this.value;
     }
 
-
-
+    /**
+     * Get the set of possibile values for the cell.
+     */
     public getValueSet(): number[] {
         return this.values;
     }
@@ -32,9 +36,6 @@ export class GameCellSudoku extends GameCell {
         return this.values.indexOf(value)>=0;
     }
     */
-
-
-
 
     /**
      * Assign the solving value to the cells

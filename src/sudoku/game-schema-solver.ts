@@ -6,59 +6,6 @@ import { GameSchemaCheckerSudoku } from "./game-schema-checker";
 export class GameSchemaSolverSudoku extends GameSchemaSolver<GameSchemaSudoku> {
 
 
-    /**
-     * Find value in a 3x3 square
-     * @param cells array of game cells
-     * @param r row
-     * @param c col
-     * @param value true if value exists in square rooted in (r,c) cell
-     */
-    public findInSquare(cells: number[][], r: number, c: number, value: number): boolean {
-
-        let found = false;
-        const sr = Math.floor(r / 3);
-        const sc = Math.floor(c / 3);
-
-        // 0,1,2 --> 0
-        // 3,4,5 --> 1
-        // 6,7,8 --> 2
-
-        for (let i = 0; i < 3 && !found; i++) {
-            for (let j = 0; j < 3 && !found; j++) {
-                found = cells[sr * 3 + i][sc * 3 + j] === value;
-            }
-        }
-        return found;
-
-    }
-
-    /**
-     * Find value in a column
-     * @param cells array of game cells
-     * @param c col
-     * @param value true if value exists in column c
-     */
-    public findInCol(cells: number[][], c: number, value: number) {
-        let found = false;
-        for (let i = 0; i < 9 && !found; i++) {
-            found =  cells[i][c] === value;
-        }
-        return found;
-    }
-
-    /**
-     * Find value in a row
-     * @param cells array of game cells
-     * @param r row
-     * @param value true if value exists in row r
-     */
-    public findInRow(cells: number[][], r: number, value: number) {
-        let found = false;
-        for (let i = 0; i < 9 && !found; i++) {
-            found = cells[r][i] === value;
-        }
-        return found;
-    }
 
 
     public removeFromSquare(cells: GameCellSudoku[][], r: number, c: number, value: number): number {
@@ -125,17 +72,9 @@ export class GameSchemaSolverSudoku extends GameSchemaSolver<GameSchemaSudoku> {
         } else {
 
             if(this.lastSolvedCells===0) {
-                this.matrix = schema.getValues();
-                if(this.deepSolve(0,0)) {
-                    schema.setValues(this.matrix, true);
-                    this.solved = true;
-                    this.solutionResult = `Solution found after ${this.stepNumber} semplifications and recursive search`;
-        
-                } else {
                     this.stopped = true;
-                    this.solutionResult = `Search stopped after ${this.stepNumber} semplifications`;
+                    this.solutionResult = `Search stopped after ${this.stepNumber} semplifications, starting recursive search`;
     
-                }
             }
         }
 
@@ -192,7 +131,8 @@ export class GameSchemaSolverSudoku extends GameSchemaSolver<GameSchemaSudoku> {
     }
 
 
-    public matrix: number[][] = [];
+    // public matrix: number[][] = [];
+    /*
     public deepSolve(row: number, col: number): boolean {
         let c = col;
         let r = row;
@@ -246,27 +186,7 @@ export class GameSchemaSolverSudoku extends GameSchemaSolver<GameSchemaSudoku> {
         // console.log(`${r},${c}: just returning false`);
         return false;
     }
-    getCellValueSet(matrix: number[][], r: number, c: number): number[] {
-        const valueSet: number[] = [];
-        for(let i=1;i<=9;i++) {
-            if(this.checkIfSafe(matrix, r, c, i)) {
-                valueSet.push(i);
-            }
-        }
-
-        return valueSet;
-    }
-
-    /**
-     * Check if safe to put in cell
-     */
-    private checkIfSafe(matrix:number[][], r: number, c: number, v: number): boolean {
-        return (!this.findInRow(matrix, r, v)
-                    && !this.findInCol(matrix, c, v)
-                    && !this.findInSquare(matrix, r, c, v));
-    }
-
-
-
-
+    */
 }
+
+
