@@ -72,10 +72,9 @@ export class GameSchemaSolverSudoku extends GameSchemaSolver<GameSchemaSudoku> {
         } else {
 
             if(this.lastSolvedCells===0) {
-                    this.stopped = true;
-                    this.solutionResult = `Search stopped after ${this.stepNumber} semplifications, starting recursive search`;
-    
-            }
+                this.stopped = true;
+                this.solutionResult = `Search stopped after ${this.stepNumber} semplifications, starting recursive search`;
+                }
         }
 
         this.solvedCells += this.lastSolvedCells;
