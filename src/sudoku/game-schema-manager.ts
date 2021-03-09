@@ -23,6 +23,8 @@ export class GameSchemaManagerSodoku extends GameSchemaManager<GameCellSudoku, G
     public getCellValuesRep(row: number, col: number): string | null {
         let html = '';
         const values = this.schema.getCellValueSet(row, col);
+        if(values.length===9)
+            return '';
         if (values.length > 0) {
 
             let dim = 3;

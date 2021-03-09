@@ -124,13 +124,23 @@ export class GameSchemaSudoku extends GameSchema<GameCellSudoku> {
 
 
 
-    private initCellsValue(values: number[][]) {
+    public initCellsValue(values: number[][]) {
         for (let r = 0; r < 9; r++) {
             for (let c = 0; c < 9; c++) {
                 this.cells[r][c].initValue(values[r][c]);
             }
         }
     }
+
+    initCellsValueSets(valueSets: number[][][]) {
+        for (let r = 0; r < 9; r++) {
+            for (let c = 0; c < 9; c++) {
+                this.cells[r][c].setNewValueSet(valueSets[r][c], true);
+            }
+        }
+
+    }
+
 
     private initCells(origCells: number[][]): void {
         this.cells = this.createCells();
@@ -179,6 +189,19 @@ export class GameSchemaSudoku extends GameSchema<GameCellSudoku> {
         }
         return values;
     }
+
+    public getValueSets(): number[][][] {
+
+        const values: number[][][] = Array(9);
+        for (let i = 0; i < 9; i++) {
+            values[i] = Array(9);
+            for (let j = 0; j < 9; j++) {
+                values[i][j] = Object.assign([], this.cells[i][j].getValueSet());
+            }
+        }
+        return values;
+    }
+
 
 
 

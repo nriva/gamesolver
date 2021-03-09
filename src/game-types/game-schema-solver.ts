@@ -3,23 +3,26 @@ import { GameSchema } from "./game-schema";
 export abstract class GameSchemaSolver<T> {
 
 
+    protected solving = false;
     protected solved = false;
-    protected solving: boolean = false;
-    protected stopped: boolean = false;
+    protected stopped = false;
+
+    public isSolving() { return  this.solving; }
+    public isStopped() { return this.stopped; }
+    public isSolved() { return this.solved; }
+
 
     protected readonly MAX_STEP_NUMBER = 99999;
     protected stepNumber = 0;
     public getStepNumber() { return this.stepNumber; }
 
-
     protected solutionResult:string="";
-
     public getSolutionResult() : string { return this.solutionResult; }
 
+    protected lastSolvedCells: number=0;
+    protected solvedCells: number=0;
+    public getLastSolvedCells(): number { return this.lastSolvedCells; }
 
-    public isSolving() { return this.solving; }
-    public isStopped() { return this.stopped; }
-    public isSolved() { return this.solved; }
 
     reset() {
         this.solved = false;
@@ -37,32 +40,24 @@ export abstract class GameSchemaSolver<T> {
 
     public stop() {
         this.stopped = true;
-        this.solving = false;
     }
 
     public pause() {
-        this.solving = false;
     }
 
     public solve(schema: T) {
+        this.solving = true;
         this.stopped = false;
         this.solved = false;
         this.stepNumber = 0;
-        this.solving = true;
         this.step(schema);
-      }
+    }
+
+
+    public startSolving(): void {
+        this.solving = true;
+    }
 
 
     public abstract step(schema: T): void;
-
-
-    protected lastSolvedCells: number=0;
-
-    protected solvedCells: number=0;
-
-    public getLastSolvedCells(): number { return this.lastSolvedCells; }
-
-
-
-
 }

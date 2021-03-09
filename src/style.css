@@ -1,16 +1,21 @@
-.gametable {
+.gametable, .gametableedt {
     display:table;
     width: min-content;
     border-collapse: collapse;
 }
 
-.gametablerow {
+.gametableedt {
+    display: none;
+}
+
+
+.gametablerow, .gametablerowedt {
     display:table-row;
     border-collapse: collapse;
     min-height: 72px;
 }
 
-.gametablecell {
+.gametablecell, .gametablecelledt  {
     display:table-cell;
     min-width: 72px;
     min-height: 72px;
@@ -28,6 +33,7 @@
 
     position: relative;
 }
+
 
 .highlight {
     background-color: greenyellow;
@@ -72,4 +78,9 @@
 #toolbar {
     padding-top: 10px;
     padding-bottom: 10px;
+}
+
+.cellEditorValues {
+    font-size: small; 
+    text-align: right;
 }

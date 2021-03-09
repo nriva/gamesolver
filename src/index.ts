@@ -54,10 +54,6 @@ worker.onmessage = (event) => {
 };
 
 
-let solving: boolean = false;
-let solvingPaused: boolean = false;
-let solvingStopped: boolean = false;
-
 let editing = false;
 let currentEditRow = 0;
 let currentEditCol = 0;
@@ -100,9 +96,6 @@ function resetBtnClick() {
     schema.resetCellsToOrig();
     loadAllValues();
     solver.reset();
-    solving = false;
-    solvingPaused = false;
-    solvingStopped = false;
     $('#solutionResult').text('');
     $('#solvedCells').css('display','none');
     $('#roundNumber').text('0');
@@ -113,23 +106,97 @@ function solveBtnClick() {
 }
 
 function stopBtnClick() {
-    solvingStopped = true;
-    solving = false;
+
 }
 
 function pauseBtnClick() {
-    solvingPaused = true;
-    solving = false;
 }
 
 function stepBtnClick() {
     stepGame();
 }
 
+function editTable(row: number,col: number, value: number, valueSet: number[]): string {
+
+    const indicators: boolean[] = Array(false,false,false,false,false,false,false,false,false) ;
+    if(value===0) {
+        valueSet.forEach((v)=> indicators[v-1] = true);
+    } else {
+        indicators[value-1] = true;
+    }
+
+    const table = `<table id="cellEditorTable${row}${col}" style="width: 100%; height: 100%">
+    <tr>
+      <td><div class="cellEditorValues">1</div></td><td><input id="cellEdit${row}${col}1" type="checkbox" ${indicators[0]?"checked":""}></td>
+      <td><div class="cellEditorValues">2</div></td><td><input id="cellEdit${row}${col}2" type="checkbox" ${indicators[1]?"checked":""}></td>
+      <td><div class="cellEditorValues">3</div></td><td><input id="cellEdit${row}${col}3" type="checkbox" ${indicators[2]?"checked":""}></td>
+    </tr>
+    <tr>
+      <td><div class="cellEditorValues">4</div></td><td><input id="cellEdit${row}${col}4" type="checkbox" ${indicators[3]?"checked":""}></td>
+      <td><div class="cellEditorValues">5</div></td><td><input id="cellEdit${row}${col}5" type="checkbox" ${indicators[4]?"checked":""}></td>
+      <td><div class="cellEditorValues">6</div></td><td><input id="cellEdit${row}${col}6" type="checkbox" ${indicators[5]?"checked":""}></td>
+    </tr>
+    <tr>
+      <td><div class="cellEditorValues">7</div></td><td><input id="cellEdit${row}${col}7" type="checkbox" ${indicators[6]?"checked":""}></td>
+      <td><div class="cellEditorValues">8</div></td><td><input id="cellEdit${row}${col}8" type="checkbox" ${indicators[7]?"checked":""}></td>
+      <td><div class="cellEditorValues">9</div></td><td><input id="cellEdit${row}${col}9" type="checkbox" ${indicators[8]?"checked":""}></td>
+    </tr>
+  </table>`;    
+
+  return table;
+}
+
+function cellEditCheckBox(event: JQuery.TriggeredEvent) {
+
+    if(!editing)
+        return;
+
+    // 01234567890
+    // cellEditrci
+    const elementId: string = event.target.id;
+    const subId: string = elementId.substring(0, elementId.length-1);
+
+    const row = Number(elementId.substr(8,1));
+    const col = Number(elementId.substr(9,1));
+    const id = Number(elementId.substr(10,1));
+    const newValueSet: number[] = [];
+    for(let i=1;i<=9;i++) {
+        if($('#' + subId + String(i)).prop('checked'))
+            newValueSet.push(i);
+    }
+    schema.getCell(row-1, col-1).setNewValueSet(newValueSet);
+    loadAllValues();
+}
+
 function editBtnClick() {
     //console.log('starting worker...')
     //worker.postMessage({ limit: 2000 });
 
+
+    if(editing) {
+        $('#gameTableEditor').css('display', 'none');
+        editing = false;
+        return;
+    }
+
+    
+
+    let row = 1;
+    let col = 1;
+
+    while(row<=9) {
+        col = 1;
+        while(col<=9) {
+            const id = `#cellEdt${row}${col}`;
+            $(id).html(editTable(row, col, schema.getCellValue(row-1, col-1), schema.getCellValueSet(row-1, col-1)));
+            for(var i=1;i<=9;i++) {
+                $(`#cellEdit${row}${col}${i}`).on("change", (event: JQuery.TriggeredEvent) => { cellEditCheckBox(event) } );
+            }
+            col++;
+        }
+        row++;
+    }
+    $('#gameTableEditor').css('display', 'table');
     editing = true;
 }
 
@@ -158,36 +225,31 @@ function generateBtnClick() {
     loadAllValues();
 }
 
-function confirmEditBtnClick() {
-    if(!editing) return;
-    schema.confirmCellEdit(currentEditRow, currentEditCol);
-    $('#cellEditor').css('display','none');
-}
 
 
 function solveGame(): void {
-    solving = true;
-    solvingStopped = false;
-    solvingPaused = false;
+    solver.startSolving();
     stepGame();
 }
 
 function stepGame(): void {
+
+    if(solver.isSolved()||solver.isStopped())
+        return;
+
     solver.step(schema);
     loadAllValues();
 
 
     if(solver.isSolved()) {
-        solving = false;
         $('#solutionResult').text("- " + solver.getSolutionResult());
     } else if(solver.isStopped()) {
-        solving = false;
         const matrix = schema.getValues();
         console.log('starting worker...')
         worker.postMessage({ 'matrix': matrix });
     }
 
-    if (solving) {
+    if (solver.isSolving()) {
         setTimeout(() => stepGame(), 100);
      }
 }
@@ -199,6 +261,114 @@ class SolutionHandler implements GameSolutionHandler {
 }
 
 //const solutionHandler: SolutionHandler = new SolutionHandler();
+
+function loadBtnClick() {
+
+    let loaded: boolean = false;
+    let values = localStorage.getItem("gamesolver.schema");
+    if(values!=null) {
+        schema.initCellsValue( JSON.parse(values) );
+        loaded = true;
+    }
+
+    let valueSets = localStorage.getItem("gamesolver.schema.values");
+    if(valueSets!=null) {
+        schema.initCellsValueSets( JSON.parse(valueSets) );
+        loaded = true;
+    }
+    if(loaded)
+        loadAllValues();
+
+}
+
+function saveBtnClick() {
+    localStorage.setItem("gamesolver.schema", JSON.stringify(schema.getValues()));
+    localStorage.setItem("gamesolver.schema.values", JSON.stringify(schema.getValueSets()));
+}
+
+
+function useFileContents(contents: string | ArrayBuffer) {
+    let data: any = null;
+    if(typeof contents === "string")
+        data = JSON.parse(contents);
+
+    if(data == null)
+        return;
+
+    let loaded: boolean = false;
+    let values = data.values;
+    if(values!=null) {
+        schema.initCellsValue( values );
+        loaded = true;
+    }
+
+    let valueSets = data.valueSets;
+    if(valueSets!=null) {
+        schema.initCellsValueSets( valueSets );
+        loaded = true;
+    }
+    if(loaded)
+        loadAllValues();
+
+  }
+  
+  function readSingleFile(e: any) {
+    var file = e.target.files[0];
+    if (!file) {
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        if(e!=null && e.target!=null) {
+            var contents = e.target.result;
+            if(contents!=null)
+            useFileContents(contents);
+        }
+    };
+    reader.readAsText(file);
+    $('#file-input').css("display", "none");
+  }
+  
+  
+
+function importBtnClick() {
+
+    $('#file-input').css("display", "block");
+
+
+}
+
+function download(data: BlobPart, filename: string, type: any) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+  }
+  
+
+function exportBtnClick() {
+    const data = {values: schema.getValues(),
+                    valueSets: schema.getValueSets() };
+
+
+    download(JSON.stringify(data)
+    , 'schema.json'
+    , 'text/json');
+  
+}
+
+
 
 
 
@@ -214,8 +384,17 @@ function init() {
     $("#stepBtn").on("click", stepBtnClick );
     $("#editBtn").on("click", editBtnClick );
     $("#generateBtn").on("click", generateBtnClick );
+    $("#loadBtn").on("click", loadBtnClick );
+    $("#saveBtn").on("click", saveBtnClick );
 
-    $("#confirmEditBtn").on("click", confirmEditBtnClick)
+    $("#exportBtn").on("click", exportBtnClick );
+    $("#importBtn").on("click", importBtnClick );
+
+    $('#file-input').on("change", readSingleFile);
+
+
+
+    //$("#confirmEditBtn").on("click", confirmEditBtnClick)
 
     $('.cellCkeck').on('change', function(e) { console.log('changed ' + e) } );
 
