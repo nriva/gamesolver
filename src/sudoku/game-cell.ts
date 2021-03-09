@@ -130,5 +130,19 @@ export class GameCellSudoku extends GameCell {
         this.savedValues = [];
     }
 
+    public setNewValueSet(newValueSet: number[], onlySets: boolean = false) {
+        if(newValueSet.length===1) {
+            if(!onlySets)
+                this.value = newValueSet[0];
+            this.values = [];
+        } else {
+            if(!onlySets)
+                this.value = 0;
+            this.values = Object.assign([], newValueSet);
+        }
+
+    }
+
+
 
 }

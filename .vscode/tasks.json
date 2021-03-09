@@ -20,7 +20,15 @@
 			],
 			"group": "build",
 			"label": "tsc: watch - test"
+		},
+		{
+			"type": "npm",
+			"script": "startdev",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"label": "npm: startdev",
+			"detail": "npx webpack serve"
 		}
-
 	]
 }
