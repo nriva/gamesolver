@@ -1,9 +1,10 @@
 import { GameSchemaChecker } from "../game-types/game-schema-checker";
 import { GameSchemaCheckerResult } from "../game-types/game-schema-checker-result";
+import { GameCellSudoku } from "./game-cell";
 import { GameSchemaSudoku } from "./game-schema";
 
 
-export class GameSchemaCheckerSudoku implements GameSchemaChecker<GameSchemaSudoku> {
+export class GameSchemaCheckerSudoku implements GameSchemaChecker<GameCellSudoku, GameSchemaSudoku> {
 
     private incomplete: boolean = false;
 

@@ -1,10 +1,11 @@
 import { GameSchema } from "../game-types/game-schema";
 import { GameSchemaGenerator } from "../game-types/game-schema-generator";
+import { GameCellSudoku } from "./game-cell";
 import { GameSchemaSudoku } from "./game-schema";
 import { GameSchemaSolverSudoku } from "./game-schema-solver";
 import { findInCol, findInRow, findInSquare } from "./sudoku-util";
 
-export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSudoku>  {
+export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameCellSudoku, GameSchemaSudoku>  {
 
 
     private solver:  GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
@@ -13,24 +14,27 @@ export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameSchemaSud
     private size: number;
     // Size of an inner square
     private squareSize: number;
-    private missingDigits: number;
+    private missingDigits: number=0;
 
     public mat: number[][] = [[0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0]];
 
 
-    constructor(size: number, missingDigits: number) {
+    constructor(size: number) {
 
         super();
         this.size = size;
-        this.missingDigits = missingDigits;
+        
 
         const s = Math.sqrt(size);
         this.squareSize = Math.floor(s);
     }
 
-    public generate(): GameSchemaSudoku {
+    public generate(properties: any): GameSchemaSudoku {
+
+        this.missingDigits = properties.missingDigits;
+
         this.fillValues();
         const schema = new GameSchemaSudoku();
         schema.createCells()

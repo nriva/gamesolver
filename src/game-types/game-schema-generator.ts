@@ -1,5 +1,8 @@
-export abstract class GameSchemaGenerator<T> {
+import { GameCell } from "./game-cell";
+import { GameSchema } from "./game-schema";
 
-    public abstract generate(): T;
+export abstract class GameSchemaGenerator<C extends GameCell, T extends GameSchema<C>> {
+
+    public abstract generate(properties:any): T;
 
 }

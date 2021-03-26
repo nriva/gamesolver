@@ -1,6 +1,7 @@
+import { GameCell } from "./game-cell";
 import { GameSchema } from "./game-schema";
 
-export abstract class GameSchemaSolver<T> {
+export abstract class GameSchemaSolver<C extends GameCell, T extends GameSchema<C>> {
 
 
     protected solving = false;

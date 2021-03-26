@@ -2,27 +2,22 @@ import { GameCell } from "../game-types/game-cell";
 
 export class GameCellSudoku extends GameCell {
 
-    private value: number;
+
     private values: number[];
 
     private proposedValue: number=0;
 
     private savedValues: number[] = [];
 
-    private readonly ALL_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+
+
 
     constructor() {
         super();
-        this.value = 0;
+        this.ALL_VALUES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         this.values = this.ALL_VALUES;
     }
 
-    /**
-     * Get the value of the cell.
-     */
-    public getValue(): number {
-        return this.value;
-    }
 
     /**
      * Get the set of possibile values for the cell.
@@ -57,12 +52,12 @@ export class GameCellSudoku extends GameCell {
      * @param value the value
      */
     public initValue(value: number) {
-        this.value = value;
+        super.initValue(value);
         if(value === 0)
             this.values = Object.assign([], this.ALL_VALUES);
         else
             this.values = [];
-        this.highlighted = false;
+        
     }
 
     /**
@@ -70,9 +65,9 @@ export class GameCellSudoku extends GameCell {
      * @param other the cell to copy from
      */
     public copyFrom(other: GameCell) {
-        this.value = (other as GameCellSudoku).value;
+        super.copyFrom(other);
         this.values = Object.assign([], (other as GameCellSudoku).values);
-        this.highlighted = other.isHighlighted();
+
     }
 
     public clone() : GameCell {

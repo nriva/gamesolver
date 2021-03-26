@@ -1,83 +1,44 @@
 import $ from "jquery";
+import "./style.css";
+
+// import "./sudoku/style.css";
+// import DeepSolveWorker from "worker-loader!./sudoku/deep-solver-worker";
+
 import { GameSchema } from "./game-types/game-schema";
-import { GameSolutionHandler, GameSolutionResult } from "./game-types/game-solution-result";
-import { GameSchemaSudoku } from "./sudoku/game-schema";
-import { GameSchemaGeneratorSudoku } from "./sudoku/game-schema-generator";
-import { GameSchemaSolverSudoku } from "./sudoku/game-schema-solver";
-import css from "./style.css";
-// import PrimeWorker from "worker-loader!./sudoku/worker";
-import DeepSolveWorker from "worker-loader!./sudoku/deep-solver-worker";
-import { GameSchemaManagerSodoku } from "./sudoku/game-schema-manager";
+import { GameCell } from "./game-types/game-cell";
+import { GameSchemaSolver } from "./game-types/game-schema-solver";
+import { GameSchemaManager } from "./game-types/game-schema-manager";
+import { GameFactory } from "./game-types/game-factory";
+import { GameFactorySudoku } from "./sudoku/game-factory";
+import { GameFactorySolitarie } from "./solitaire/game-factory";
+import { GameSchemaManagerEditable } from "./game-types/game-schema-manager-editable";
+import { GameSchemaGenerator } from "./game-types/game-schema-generator";
 
 
-let schema: GameSchemaSudoku = new GameSchemaSudoku(true);
-const solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
+let schema: GameSchema<GameCell>;
+let solver: GameSchemaSolver<GameCell, GameSchema<GameCell>> | null;
+let schemaManager : GameSchemaManager<GameCell, GameSchema<GameCell>>;
 
-let schemaManager : GameSchemaManagerSodoku = new GameSchemaManagerSodoku(schema);
-
-
+let schemaGenerator: GameSchemaGenerator<GameCell, GameSchema<GameCell>>| null;
 
 // const worker = new PrimeWorker();
-const worker = new DeepSolveWorker();
+let solutionWorker: any; // = new DeepSolveWorker();
 
-worker.onmessage = (event) => {
-    if(event.data.eventType === 'success') {
-        schema.setValues(event.data.matrix);
-        loadAllValues();
-        $('#solutionResult').text("- " + event.data.solutionResult);
-    }
-    else {
-        const eventData = event.data.eventData;
-        console.log(`${event.data.eventType} ${eventData.row} ${eventData.col}`);
+let startGeneration: boolean | null = null;
 
-        const rep: string|null = schemaManager.getCellValueRep(eventData.row, eventData.col, eventData.value);
-        if(rep!=null)
-            $(`#cell${eventData.row+1}${eventData.col+1}`).html(rep);
+function refreshBoard() {
 
+    // <span id="statusInfo"></span>&nbsp;<span id="solutionResult"></span>&nbsp;<span id="checkResult"></span>
+    const info = schemaManager.getStatusInfo(solver);
+    $('#statusInfo').html(info.statusInfo);
+    $('#solutionResult').html(info.solutionResult);
+    $('#checkResult').html(info.checkResult);
 
-        $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('highlight');
-        $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('tried');
-        $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('failed');
-
-        if(event.data.eventType === 'tryValue') {
-
-            if(!$(`#cell${eventData.row+1}${eventData.col+1}`).parent().hasClass('highlight'))
-                $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('tried')
-        } else if(event.data.eventType === 'setValue') {
-            $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('highlight');
-        } else if(event.data.eventType === 'undoValue') {
-            if(!$(`#cell${eventData.row+1}${eventData.col+1}`).parent().hasClass('highlight'))
-                $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('failed');
-        }
-
-    }
-};
-
-
-let editing = false;
-let currentEditRow = 0;
-let currentEditCol = 0;
-
-let startGeneration : boolean | null = null;
-
-function loadAllValues() {
-
-    $('#roundNumber').text(solver.getStepNumber());
-
-    const solvedCells = solver.getLastSolvedCells();
-    if(solvedCells>0) {
-        $('#solvedCells').css('display','inline');
-        $('#solvedCellsNum').text(solvedCells);
-    } else {
-        $('#solvedCells').css('display','none');
-    }
 
     for(let row=0;row<schema.getRowNumber();row++)
-        for(let col=0;col<schema.getColNumber();col++)
-        {
-            const value : string | null = schemaManager.getCellValueRep(row,col);
-            if(value!=null)
-            {
+        for(let col=0;col<schema.getColNumber();col++) {
+            const value = schemaManager.getCellValueRep(row,col, null);
+            if(value!=null) {
                 $(`#cell${row+1}${col+1}`).html(value);
 
                 $(`#cell${row+1}${col+1}`).parent().removeClass('tried');
@@ -94,11 +55,11 @@ function loadAllValues() {
 
 function resetBtnClick() {
     schema.resetCellsToOrig();
-    loadAllValues();
-    solver.reset();
+    refreshBoard();
+    if(solver!=null) solver.reset();
     $('#solutionResult').text('');
-    $('#solvedCells').css('display','none');
-    $('#roundNumber').text('0');
+    $('#checkResult').text('');
+    $('#statusInfo').text('');
 }
 
 function solveBtnClick() {
@@ -116,40 +77,14 @@ function stepBtnClick() {
     stepGame();
 }
 
-function editTable(row: number,col: number, value: number, valueSet: number[]): string {
-
-    const indicators: boolean[] = Array(false,false,false,false,false,false,false,false,false) ;
-    if(value===0) {
-        valueSet.forEach((v)=> indicators[v-1] = true);
-    } else {
-        indicators[value-1] = true;
-    }
-
-    const table = `<table id="cellEditorTable${row}${col}" style="width: 100%; height: 100%">
-    <tr>
-      <td><div class="cellEditorValues">1</div></td><td><input id="cellEdit${row}${col}1" type="checkbox" ${indicators[0]?"checked":""}></td>
-      <td><div class="cellEditorValues">2</div></td><td><input id="cellEdit${row}${col}2" type="checkbox" ${indicators[1]?"checked":""}></td>
-      <td><div class="cellEditorValues">3</div></td><td><input id="cellEdit${row}${col}3" type="checkbox" ${indicators[2]?"checked":""}></td>
-    </tr>
-    <tr>
-      <td><div class="cellEditorValues">4</div></td><td><input id="cellEdit${row}${col}4" type="checkbox" ${indicators[3]?"checked":""}></td>
-      <td><div class="cellEditorValues">5</div></td><td><input id="cellEdit${row}${col}5" type="checkbox" ${indicators[4]?"checked":""}></td>
-      <td><div class="cellEditorValues">6</div></td><td><input id="cellEdit${row}${col}6" type="checkbox" ${indicators[5]?"checked":""}></td>
-    </tr>
-    <tr>
-      <td><div class="cellEditorValues">7</div></td><td><input id="cellEdit${row}${col}7" type="checkbox" ${indicators[6]?"checked":""}></td>
-      <td><div class="cellEditorValues">8</div></td><td><input id="cellEdit${row}${col}8" type="checkbox" ${indicators[7]?"checked":""}></td>
-      <td><div class="cellEditorValues">9</div></td><td><input id="cellEdit${row}${col}9" type="checkbox" ${indicators[8]?"checked":""}></td>
-    </tr>
-  </table>`;    
-
-  return table;
-}
-
+/*
 function cellEditCheckBox(event: JQuery.TriggeredEvent) {
 
-    if(!editing)
+    if(!schemaManager.isEditing())
         return;
+
+    // TODO:
+    // Move this sudoku-specific code elsewhere
 
     // 01234567890
     // cellEditrci
@@ -160,44 +95,17 @@ function cellEditCheckBox(event: JQuery.TriggeredEvent) {
     const col = Number(elementId.substr(9,1));
     const id = Number(elementId.substr(10,1));
     const newValueSet: number[] = [];
-    for(let i=1;i<=9;i++) {
+    for(let i=1;i<= schema.getRowNumber() ;i++) {
         if($('#' + subId + String(i)).prop('checked'))
             newValueSet.push(i);
     }
     schema.getCell(row-1, col-1).setNewValueSet(newValueSet);
-    loadAllValues();
+    //refreshBoard();
 }
+*/
 
 function editBtnClick() {
-    //console.log('starting worker...')
-    //worker.postMessage({ limit: 2000 });
-
-
-    if(editing) {
-        $('#gameTableEditor').css('display', 'none');
-        editing = false;
-        return;
-    }
-
-    
-
-    let row = 1;
-    let col = 1;
-
-    while(row<=9) {
-        col = 1;
-        while(col<=9) {
-            const id = `#cellEdt${row}${col}`;
-            $(id).html(editTable(row, col, schema.getCellValue(row-1, col-1), schema.getCellValueSet(row-1, col-1)));
-            for(var i=1;i<=9;i++) {
-                $(`#cellEdit${row}${col}${i}`).on("change", (event: JQuery.TriggeredEvent) => { cellEditCheckBox(event) } );
-            }
-            col++;
-        }
-        row++;
-    }
-    $('#gameTableEditor').css('display', 'table');
-    editing = true;
+    schemaManagerEdt.onEdit(refreshBoard);
 }
 
 function generateBtnClick() {
@@ -218,35 +126,52 @@ function generateBtnClick() {
         startGeneration = false;
     }
 
-
-    const generator = new GameSchemaGeneratorSudoku(9, val);
-    schema = generator.generate();
-    schemaManager = new GameSchemaManagerSodoku(schema);
-    loadAllValues();
+    if(schemaGenerator!=null) {
+        schema = schemaGenerator.generate({missingDigits: val});
+        schemaManager.setSchema(schema);
+        refreshBoard();
+    }
 }
 
 
 
 function solveGame(): void {
+    /*
+    if(solver==null)
+        return;
+
     solver.startSolving();
+    refreshBoard();
     stepGame();
+    */
+    const matrix = schema.getValues();
+    $("#statusInfo").text("Searching the solution...");
+    solutionWorker.postMessage({ 'matrix': matrix });
+
 }
 
 function stepGame(): void {
+    if(solver==null)
+        return;
 
     if(solver.isSolved()||solver.isStopped())
         return;
 
     solver.step(schema);
-    loadAllValues();
+    refreshBoard();
 
 
     if(solver.isSolved()) {
         $('#solutionResult').text("- " + solver.getSolutionResult());
     } else if(solver.isStopped()) {
+        let msg = "No more semplification is possibile";
+        if(canSolve())
+            msg += ". Try with the Solve button.";
+        $("#statusInfo").text(msg);
+        /*        
         const matrix = schema.getValues();
-        console.log('starting worker...')
-        worker.postMessage({ 'matrix': matrix });
+        solutionWorker.postMessage({ 'matrix': matrix });
+        */
     }
 
     if (solver.isSolving()) {
@@ -254,61 +179,32 @@ function stepGame(): void {
      }
 }
 
-class SolutionHandler implements GameSolutionHandler {
-    handleResult(result: GameSolutionResult): void {
-        throw new Error("Method not implemented.");
-    }
-}
-
-//const solutionHandler: SolutionHandler = new SolutionHandler();
 
 function loadBtnClick() {
 
-    let loaded: boolean = false;
-    let values = localStorage.getItem("gamesolver.schema");
-    if(values!=null) {
-        schema.initCellsValue( JSON.parse(values) );
-        loaded = true;
-    }
+    const values = localStorage.getItem("gamesolver." + schemaManager.getAppName() + ".schema");
 
-    let valueSets = localStorage.getItem("gamesolver.schema.values");
-    if(valueSets!=null) {
-        schema.initCellsValueSets( JSON.parse(valueSets) );
-        loaded = true;
-    }
-    if(loaded)
-        loadAllValues();
+    if(typeof values === 'string')
+        if( schema.fromJSON(values) )
+            refreshBoard();
 
 }
 
 function saveBtnClick() {
-    localStorage.setItem("gamesolver.schema", JSON.stringify(schema.getValues()));
-    localStorage.setItem("gamesolver.schema.values", JSON.stringify(schema.getValueSets()));
+    localStorage.setItem("gamesolver." + schemaManager.getAppName() + ".schema", schema.toJSON() );
 }
 
 
 function useFileContents(contents: string | ArrayBuffer) {
-    let data: any = null;
-    if(typeof contents === "string")
-        data = JSON.parse(contents);
 
-    if(data == null)
+    if(typeof contents !== "string")
         return;
 
-    let loaded: boolean = false;
-    let values = data.values;
-    if(values!=null) {
-        schema.initCellsValue( values );
-        loaded = true;
-    }
 
-    let valueSets = data.valueSets;
-    if(valueSets!=null) {
-        schema.initCellsValueSets( valueSets );
-        loaded = true;
-    }
+    const loaded: boolean = schema.fromJSON(contents)
+
     if(loaded)
-        loadAllValues();
+        refreshBoard();
 
   }
   
@@ -339,49 +235,166 @@ function importBtnClick() {
 }
 
 function download(data: BlobPart, filename: string, type: any) {
-    var file = new Blob([data], {type: type});
+    const file = new Blob([data], {type: type});
     if (window.navigator.msSaveOrOpenBlob) // IE10+
         window.navigator.msSaveOrOpenBlob(file, filename);
     else { // Others
-        var a = document.createElement("a"),
-                url = URL.createObjectURL(file);
+        const a = document.createElement("a");
+        const url = URL.createObjectURL(file);
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
         setTimeout(function() {
             document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);  
+            window.URL.revokeObjectURL(url);
         }, 0); 
     }
   }
   
 
 function exportBtnClick() {
-    const data = {values: schema.getValues(),
-                    valueSets: schema.getValueSets() };
-
-
-    download(JSON.stringify(data)
-    , 'schema.json'
+    download(schema.toJSON()
+    , schemaManager.getAppName() + '.json'
     , 'text/json');
-  
+}
+
+function undoBtnClick() {
+    schema.undoLastMove();
+    refreshBoard();
 }
 
 
+// const factory: GameFactory = new GameFactorySudoku();
+const factory: GameFactory = new GameFactorySolitarie();
 
+function animateMoves(moves:number[][][], index: number) {
+
+    schema.executeMove(moves[index]);
+    refreshBoard();
+    if(index<moves.length)
+        setTimeout(()=>animateMoves(moves,index+1),1000);
+
+}
+
+let schemaManagerEdt: GameSchemaManagerEditable<GameCell,GameSchema<GameCell>>;
+
+function canEdit(schemaManager: any) : schemaManager is GameSchemaManagerEditable<GameCell,GameSchema<GameCell>> {
+
+    if(schemaManagerEdt!=null)
+        return true;
+
+    const ok = typeof schemaManager.getGameTableRowEdt !=="undefined";
+    if(ok)
+        schemaManagerEdt = schemaManager as GameSchemaManagerEditable<GameCell,GameSchema<GameCell>>;
+    return ok;
+}
+
+function canSimplify(): boolean {
+    return solver!=null;
+}
+
+function canSolve(): boolean {
+    return solutionWorker!=null;
+}
 
 
 function init() {
-    console.log(css.classNames);
+    //console.log(css.classNames);
+
+    schema = factory.getSchema(true);
+    solver = factory.getSchemaSolver();
+    schemaManager = factory.getSchemaManager();
+    schemaGenerator = factory.getSchemaGenerator();
+
+    solutionWorker = factory.createSolutionWorker();
+    if(solutionWorker!=null)
+        solutionWorker.onmessage = (event: any) => {
+        if(event.data.eventType === 'success') {
+
+            if(typeof event.data.solvingMoves !== 'undefined') {
+                animateMoves(event.data.solvingMoves,0);
+            } else {
+                schema.setValues(event.data.matrix);
+            }
+
+            refreshBoard();
+            $('#solutionResult').text("- " + event.data.solutionResult);
+        } else {
+            const eventData = event.data.eventData;
+            const rep: string|null = schemaManager.getCellValueRep(eventData.row, eventData.col, eventData.value);
+            if(rep!=null)
+                $(`#cell${eventData.row+1}${eventData.col+1}`).html(rep);
+
+            $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('highlight');
+            $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('tried');
+            $(`#cell${eventData.row+1}${eventData.col+1}`).parent().removeClass('failed');
+
+            if(event.data.eventType === 'tryValue') {
+                if(!$(`#cell${eventData.row+1}${eventData.col+1}`).parent().hasClass('highlight'))
+                    $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('tried')
+            } else if(event.data.eventType === 'setValue') {
+                $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('highlight');
+            } else if(event.data.eventType === 'undoValue') {
+                if(!$(`#cell${eventData.row+1}${eventData.col+1}`).parent().hasClass('highlight'))
+                    $(`#cell${eventData.row+1}${eventData.col+1}`).parent().addClass('failed');
+            }
+    
+        }
+    };
+    
+
+    schemaManager.setSchema(schema);
+
+    $('#appTitle').text(schemaManager.getAppTitle());
+
+
+/*
+    <button class="btn btn-primary" id="resetBtn">Reset</button>
+    <button class="btn btn-primary" id="solveBtn">Solve</button>
+    <button class="btn btn-primary" id="stopBtn" style="display: none;">Stop</button>
+    <button class="btn btn-primary" id="pauseBtn" style="display: none;">Pause</button>
+    <button class="btn btn-primary" id="stepBtn">Simplify</button>
+    <button class="btn btn-primary" id="editBtn">Edit</button>
+*/
+    if(canEdit(schemaManager)) {
+        let rows="";
+
+        for(let r=0;r<schema.getRowNumber();r++) {
+            rows += schemaManagerEdt.getGameTableRowEdt(r+1, schema.getColNumber());
+        }
+        $("#gameTableEditor").html(rows);
+        $('#editBtn').css('display','inline');
+
+    }
+    if(canSolve()) {
+        $('#solveBtn').css('display','inline');
+    }
+    if(canSimplify()) {
+        $('#stepBtn').css('display','inline');
+        // $('#solutionDisplay').css('display', 'none');
+    }
+    if(canGenerate()) {
+        $('#generateBtn').css('display','inline');
+    }
+    if(schema.canUndoMove()) {
+        $('#undoBtn').css('display','inline');
+    }
 
     //$('.cellValue').text('0');
+
+    let rows="";
+    for(let r=0;r<schema.getRowNumber();r++) {
+        rows += schemaManager.getGameTableRow(r+1, schema.getColNumber());
+    }
+    $("#gameTable").html(rows);
 
     $("#resetBtn").on("click", resetBtnClick );
     $("#solveBtn").on("click", solveBtnClick );
     $("#stopBtn").on("click", stopBtnClick );
     $("#pauseBtn").on("click", pauseBtnClick );
     $("#stepBtn").on("click", stepBtnClick );
+    $("#undoBtn").on("click", undoBtnClick );
     $("#editBtn").on("click", editBtnClick );
     $("#generateBtn").on("click", generateBtnClick );
     $("#loadBtn").on("click", loadBtnClick );
@@ -398,20 +411,23 @@ function init() {
 
     $('.cellCkeck').on('change', function(e) { console.log('changed ' + e) } );
 
-    $('.gametablecell').on('dblclick', function(e) {
-        if(!editing) return;
-        $('#cellEditor').css('display','inline');
-        const cell =  e.currentTarget;
-        const span = cell.children.item(0);
-        const id = span!.id.substring(span!.id.length-2);
-        currentEditRow = Number(id.substring(0,1))-1;
-        currentEditCol = Number(id.substring(1))-1;
-        schema.loadCellEditor( currentEditRow, currentEditCol  );
+    $('.gametablecell').on('click', (e) => { 
+        schemaManager.onCellClick(e, schema);
+        refreshBoard();
+    }
+    );
+    $('.gametablecell').on('dblclick', (e) => {
+        schemaManager.onCellDblClick(e, schema)
+        refreshBoard();
     });
 
-    loadAllValues();
+    refreshBoard();
 }
 
 $(() => {
     init();
 });
+
+function canGenerate():boolean {
+    return schemaGenerator!=null;
+}

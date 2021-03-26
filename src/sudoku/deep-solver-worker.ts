@@ -1,18 +1,14 @@
+import { DeepSolverMatrix } from "../game-types/deep-solve";
 import { GameSchemaCheckerSudoku } from "./game-schema-checker";
 import { getCellValueSet } from "./sudoku-util";
 
 const ctx: Worker = self as any;
 
-export class DeepSolveMatrix {
+export class DeepSolverMatrixSudoku extends DeepSolverMatrix {
 
 
     private checker: GameSchemaCheckerSudoku = new GameSchemaCheckerSudoku();
 
-    private matrix: number[][] = [];
-
-    constructor(matrix: number[][]) {
-        this.matrix = matrix;
-    }
 
     public deepSolve(row: number, col: number): boolean {
 
@@ -79,11 +75,11 @@ async function delay(milliseconds: number) {
     });
   }
 
-let solver: DeepSolveMatrix;
+let solver: DeepSolverMatrixSudoku;
 
 ctx.addEventListener("message", (event) => {
     const matrix = event.data.matrix;
-    solver = new DeepSolveMatrix(matrix);
+    solver = new DeepSolverMatrixSudoku(matrix);
     let solutionResult = "Resolution failed."
     if(solver.deepSolve(0,0))
         solutionResult = "Recursive search succeeded.";

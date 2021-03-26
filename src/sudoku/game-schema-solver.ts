@@ -3,7 +3,7 @@ import { GameCellSudoku } from "./game-cell";
 import { GameSchemaSudoku } from "./game-schema";
 import { GameSchemaCheckerSudoku } from "./game-schema-checker";
 
-export class GameSchemaSolverSudoku extends GameSchemaSolver<GameSchemaSudoku> {
+export class GameSchemaSolverSudoku extends GameSchemaSolver<GameCellSudoku, GameSchemaSudoku> {
 
 
 

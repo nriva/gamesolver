@@ -35,17 +35,7 @@
 }
 
 
-.highlight {
-    background-color: greenyellow;
-}
 
-.tried {
-    background-color: orange;
-}
-
-.failed {
-    background-color: red;
-}
 
 
 
@@ -83,4 +73,20 @@
 .cellEditorValues {
     font-size: small; 
     text-align: right;
+}
+
+.highlight {
+    background-color: greenyellow;
+}
+
+.tried {
+    background-color: orange;
+}
+
+.failed {
+    background-color: red;
+}
+
+.animation-btn {
+    display: none;
 }

@@ -6,7 +6,3 @@ export class GameSolutionResult {
         this.rounds = rounds;
     }
 }
-
-export interface GameSolutionHandler {
-    handleResult(result: GameSolutionResult): void;
-}
