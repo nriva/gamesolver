@@ -268,7 +268,7 @@ function undoBtnClick() {
 }
 
 
-localStorage.setItem("gamesolver.gamename", "SOLITAIRE" );
+localStorage.setItem("gamesolver.gamename", "SUDOKU" );
 
 const gamename = localStorage.getItem("gamesolver.gamename");
 
