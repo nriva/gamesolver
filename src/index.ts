@@ -13,6 +13,9 @@ import { GameFactorySudoku } from "./sudoku/game-factory";
 import { GameFactorySolitarie } from "./solitaire/game-factory";
 import { GameSchemaManagerEditable } from "./game-types/game-schema-manager-editable";
 import { GameSchemaGenerator } from "./game-types/game-schema-generator";
+import { Variant } from "./solitaire/game-schema";
+import { GameConfig } from "./game-types/game-config";
+import { EnglishIntialDisposition } from "./solitaire/game-schema-english";
 
 
 let schema: GameSchema<GameCell>;
@@ -127,7 +130,7 @@ function generateBtnClick() {
     }
 
     if(schemaGenerator!=null) {
-        schema = schemaGenerator.generate({missingDigits: val});
+        schema = schemaGenerator.generate(gameConfig,{missingDigits: val});
         schemaManager.setSchema(schema);
         refreshBoard();
     }
@@ -265,8 +268,27 @@ function undoBtnClick() {
 }
 
 
-// const factory: GameFactory = new GameFactorySudoku();
-const factory: GameFactory = new GameFactorySolitarie();
+localStorage.setItem("gamesolver.gamename", "SOLITAIRE" );
+
+const gamename = localStorage.getItem("gamesolver.gamename");
+
+
+const gameConfig: GameConfig = new GameConfig()
+
+let factory: GameFactory;
+
+if(gamename==="SUDOKU") {
+    gameConfig.demo = true;
+    factory = new GameFactorySudoku(gameConfig);
+} else {
+
+    gameConfig.boardVariant = Variant.ENGLISH;
+    gameConfig.demo = false;
+    gameConfig.initialDisposition = EnglishIntialDisposition.FULL;
+    factory = new GameFactorySolitarie(gameConfig);
+}
+
+
 
 function animateMoves(moves:number[][][], index: number) {
 
@@ -302,10 +324,10 @@ function canSolve(): boolean {
 function init() {
     //console.log(css.classNames);
 
-    schema = factory.getSchema(true);
-    solver = factory.getSchemaSolver();
-    schemaManager = factory.getSchemaManager();
-    schemaGenerator = factory.getSchemaGenerator();
+    schema = factory.createSchema();
+    solver = factory.createSchemaSolver();
+    schemaManager = factory.createSchemaManager();
+    schemaGenerator = factory.createSchemaGenerator();
 
     solutionWorker = factory.createSolutionWorker();
     if(solutionWorker!=null)
@@ -385,7 +407,7 @@ function init() {
 
     let rows="";
     for(let r=0;r<schema.getRowNumber();r++) {
-        rows += schemaManager.getGameTableRow(r+1, schema.getColNumber());
+        rows += schemaManager.getGameTableRow(r, schema.getColNumber());
     }
     $("#gameTable").html(rows);
 

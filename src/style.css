@@ -22,16 +22,18 @@
     width: 72px;
     height: 72px;
     
-    border-width: 1px;
-    border-color: black;
-    border-style: solid;
-    border-collapse: collapse;
-
     padding-top: 0px;
     padding-bottom: 0px;
     overflow: hidden;
 
     position: relative;
+}
+
+.gametablecellborder {
+    border-width: 1px;
+    border-color: black;
+    border-style: solid;
+    border-collapse: collapse;
 }
 
 

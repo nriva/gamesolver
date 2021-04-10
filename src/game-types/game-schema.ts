@@ -1,4 +1,5 @@
 import { GameCell } from "./game-cell";
+import { GameConfig } from "./game-config";
 
 /**
  * C = Cell type
@@ -8,7 +9,7 @@ export abstract class GameSchema<C extends GameCell> {
     /**
      * Cell values bofoer starting the solution search
      */
-    protected origCellValues: number[][];
+    protected origCellValues: number[][] = [];
     /* = [
         [0, 0, 0, 0, 0, 0, 0, 0, 0]
         , [0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -36,30 +37,42 @@ export abstract class GameSchema<C extends GameCell> {
 
     protected cells: C[][] = [];
 
-    constructor(rowNumber: number, colNumber: number, demo: boolean = false) {
+    public abstract setOrigCellValues(): void;
+
+    protected gameConfig: GameConfig
+
+
+    constructor(rowNumber: number, colNumber: number, gameConfig: GameConfig) {
         this.rowNumber = rowNumber;
         this.colNumber = colNumber;
 
-        this.origCellValues = Array(rowNumber);
-        for(let r=0;r<rowNumber;r++) {
-            this.origCellValues[r] = Array();
-            for(let c=0;c<colNumber;c++) {
-                this.origCellValues[r].push(0);
-            }
-        }
+        this.gameConfig = gameConfig;
 
+        this.origCellValues = this.createEmptyCells();
 
-        if(demo) {
-            this.initDemoCells()
+        if(gameConfig.demo) {
+            this.initDemoCells();
             for (let i = 0; i < rowNumber; i++) {
                 for (let j = 0; j < colNumber; j++) {
                     this.origCellValues[i][j] = this.demoCellValues[i][j];
                 }
             }
 
+        } else {
+            this.setOrigCellValues();
         }
         this.initCells(this.origCellValues);
+    }
 
+    public createEmptyCells(): number[][] {
+        const cells = Array(this.rowNumber);
+        for(let r=0;r<this.rowNumber;r++) {
+            cells[r] = Array();
+            for(let c=0;c<this.colNumber;c++) {
+                cells[r].push(0);
+            }
+        }
+        return cells;
     }
 
     protected rowNumber: number = 0;

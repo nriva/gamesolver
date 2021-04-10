@@ -1,4 +1,8 @@
+import { GameConfig } from "./game-types/game-config";
+import { GameCellSolitaire } from "./solitaire/game-cell";
 import { GameSchemaSolitaire } from "./solitaire/game-schema";
+import { GameSchemaSolitaireEnglish } from "./solitaire/game-schema-english";
+import { GameSchemaSolitaireEuropean } from "./solitaire/game-schema-european";
 import { DeepSolverMatrixSolitaire } from "./solitaire/game-schema-solver";
 import { GameSchemaSudoku } from "./sudoku/game-schema";
 
@@ -54,20 +58,44 @@ function testSudoku() {
 }
 */
 function testSolitaire() {
-    const schema: GameSchemaSolitaire = new GameSchemaSolitaire(true);
+    // const schema: GameSchemaSolitaire = new GameSchemaSolitaireEnglish(true);
+    const config: GameConfig = new GameConfig();
 
-    //schema.dump().forEach((e)=>console.log(e));
+    config.demo = true;
+
+    const schema: GameSchemaSolitaire = new GameSchemaSolitaireEnglish(config);
+    //schema.getCell(3,3).setValue(GameCellSolitaire.PEG_CELL);
+    //schema.getCell(0,2).setValue(GameCellSolitaire.EMPTY_CELL);
     const matrix = schema.getValues();
     const solver: DeepSolverMatrixSolitaire = new DeepSolverMatrixSolitaire(matrix, null);
-    if(solver.deepSolve(1,3)) {
-        dump(matrix,7,7).forEach((e,i)=>(console.log(String(i)+":"+e)));
+
+
+
+    const testCase = [
+        [9, 9, 0, 0, 0, 9, 9],
+        [9, 1, 0, 0, 0, 1, 9],
+        [0, 1, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 1, 0],
+        [9, 1, 0, 0, 0, 1, 9],
+        [9, 9, 0, 0, 0, 9, 9]
+        ];
+
+    // console.log(solver.hasIsolatedPegs(testCase));
+    // schema.dump().forEach((e)=>console.log(e));
+
+    if(solver.deepSolve(0, 0)) {
+        dump(matrix,7,7).forEach((e,i)=>(console.log(String(i+1)+":"+e)));
         console.log('Solved!');
     }
-
-    console.log('End.');
+    const endDate = new Date();
+    console.log('End ' + endDate.toLocaleTimeString());
+    console.log(`Elapsed ${endDate.getTime() - startDate.getTime()} ms`);
 }
 
-console.log('Start');
+const startDate = new Date();
+
+console.log('Start ' + startDate.toLocaleTimeString());
 testSolitaire();
 
 

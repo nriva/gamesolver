@@ -8,27 +8,29 @@ import { GameSchemaSudoku } from "./game-schema";
 import { GameSchemaGeneratorSudoku } from "./game-schema-generator";
 import { GameSchemaManagerSodoku } from "./game-schema-manager";
 import { GameSchemaSolverSudoku } from "./game-schema-solver";
-import DeepSolveWorker from "worker-loader!./deep-solver-worker";
+import DeepSolveWorkerSudoku from "worker-loader!./sudoku-deep-solver.worker";
+
 
 export class GameFactorySudoku extends GameFactory {
-    public getSchemaGenerator(): GameSchemaGenerator<GameCell, GameSchema<GameCell>> {
+
+    public createSchemaGenerator(): GameSchemaGenerator<GameCell, GameSchema<GameCell>> {
         return new GameSchemaGeneratorSudoku(9);
     }
-    public getSchema(demo: boolean): GameSchema<GameCell> {
-        return new GameSchemaSudoku(demo);
+    public createSchema(): GameSchema<GameCell> {
+        return new GameSchemaSudoku(this.gameConfig);
     }
-    public getSchemaSolver(): GameSchemaSolver<GameCell, GameSchema<GameCell>> {
+    public createSchemaSolver(): GameSchemaSolver<GameCell, GameSchema<GameCell>> {
 
         return new GameSchemaSolverSudoku();
 
     }
-    public getSchemaManager(): GameSchemaManager<GameCell, GameSchema<GameCell>> {
+    public createSchemaManager(): GameSchemaManager<GameCell, GameSchema<GameCell>> {
 
         return new GameSchemaManagerSodoku();
     }
 
     public createSolutionWorker() {
-        return new DeepSolveWorker();
+        return new DeepSolveWorkerSudoku();
 
 
 

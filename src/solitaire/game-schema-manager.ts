@@ -15,6 +15,13 @@ export class GameSchemaManagerSolitaire extends GameSchemaManager<GameCellSolita
         return "Solitaire Solver";
     }
 
+    protected getCellAttributes(rowId:number, colId: number): any { 
+        if(this.schema.getCell(rowId, colId).getValue()!== GameCellSolitaire.INVALID_CELL)
+            return {border:true};
+        return null;
+
+    }
+
     public getCellValueRep(row: number, col: number, value: number | null): string | null {
         const cell = this.schema.getCell(row, col);
         if(value!=null)
@@ -25,7 +32,8 @@ export class GameSchemaManagerSolitaire extends GameSchemaManager<GameCellSolita
 
         let content = "";
         if(_value===GameCellSolitaire.INVALID_CELL)
-            content = `<img src="invalid.jpg">`;
+            // content = `<img src="invalid.jpg">`;
+            content = '';
         else if(_value===GameCellSolitaire.PEG_CELL)
             content = `<img src="peg.gif">`
         else

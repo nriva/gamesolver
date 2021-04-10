@@ -1,5 +1,6 @@
 //import $ from 'jquery';
 
+import { GameConfig } from '../game-types/game-config';
 import { GameSchema } from '../game-types/game-schema';
 import { GameCellSudoku } from './game-cell'
 
@@ -98,9 +99,9 @@ export class GameSchemaSudoku extends GameSchema<GameCellSudoku> {
     //private solver: GameSchemaSolverSudoku = new GameSchemaSolverSudoku();
 
 
-    constructor(demo: boolean = false) {
+    constructor(gameConfig: GameConfig) {
 
-        super(9,9, demo);
+        super(9,9, gameConfig);
     }
 
 
@@ -116,6 +117,26 @@ export class GameSchemaSudoku extends GameSchema<GameCellSudoku> {
             [0, 0, 0, 4, 1, 9, 0, 0, 5],
             [0, 0, 0, 0, 8, 0, 0, 7, 9]];
     }
+
+    public setOrigCellValues(): void {
+        const cellValues = [
+            [5, 3, 0, 0, 7, 0, 0, 0, 0],
+            [6, 0, 0, 1, 9, 5, 0, 0, 0],
+            [0, 9, 8, 0, 0, 0, 0, 6, 0],
+            [8, 0, 0, 0, 6, 0, 0, 0, 3],
+            [4, 0, 0, 8, 0, 3, 0, 0, 1],
+            [7, 0, 0, 0, 2, 0, 0, 0, 6],
+            [0, 6, 0, 0, 0, 0, 2, 8, 0],
+            [0, 0, 0, 4, 1, 9, 0, 0, 5],
+            [0, 0, 0, 0, 8, 0, 0, 7, 9]];
+
+        for(let r=0;r<this.rowNumber;r++)
+            for(let c=0;c<this.rowNumber;c++)
+                this.origCellValues[r][c] = cellValues[r][c];
+
+
+    }
+
 
     /*
     public getCell(row:number, col:number): GameCellSudoku {

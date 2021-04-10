@@ -38,7 +38,9 @@ export class GameSchemaManagerSodoku extends GameSchemaManagerEditable<GameCellS
         return "sudoku";
     }
 
-
+    protected getCellAttributes(rowId:number, colId: number): any {
+        return {border:true};
+    }
 
 
     public onCellClick(e: any): void {

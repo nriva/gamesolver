@@ -11,19 +11,24 @@ export abstract class GameSchemaManager<C extends GameCell,T extends GameSchema<
         this.schema = schema;
     }
 
+    protected getCellAttributes(rowId:number, colId: number): any { return null; }
+
     public getGameTableRow(rowId:number, colNumber: number): string {
 
         let cells='';
         for(let c=0;c<colNumber;c++)
-            cells += this.getGameTableCell(rowId,c+1);
+            cells += this.getGameTableCell(rowId, c, this.getCellAttributes(rowId, c));
         return `<div class="gametablerow">${cells}</div>`;
 
 
     }
 
-    public getGameTableCell(rowId:number, colId:number): string {
+    public getGameTableCell(rowId:number, colId:number, attributes:any): string {
 
-        return `<div class="gametablecell"><span class="cellValue" id="cell${rowId}${colId}"></span></div>`;
+        let classes = "gametablecell";
+        if(attributes?.border)
+            classes += " gametablecellborder";
+        return `<div class="${classes}"><span class="cellValue" id="cell${rowId+1}${colId+1}"></span></div>`;
 
     }
 

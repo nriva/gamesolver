@@ -4,26 +4,31 @@ import { GameSchema } from "../game-types/game-schema";
 import { GameSchemaGenerator } from "../game-types/game-schema-generator";
 import { GameSchemaManager } from "../game-types/game-schema-manager";
 import { GameSchemaSolver } from "../game-types/game-schema-solver";
-import { GameSchemaSolitaire } from "./game-schema";
+import { Variant } from "./game-schema";
 import { GameSchemaManagerSolitaire } from "./game-schema-manager";
-import DeepSolveWorker from "worker-loader!./deep-solver-worker";
+import { GameSchemaSolitaireEnglish } from "./game-schema-english";
+import { GameSchemaSolitaireEuropean } from "./game-schema-european";
+import DeepSolveWorker from "worker-loader!./solitaire-deep-solver.worker";
 
 export class GameFactorySolitarie extends GameFactory {
     public createSolutionWorker() {
         return new DeepSolveWorker();
     }
-    public getSchema(demo: boolean): GameSchema<GameCell> {
-        return new GameSchemaSolitaire(demo);
+    public createSchema(): GameSchema<GameCell> {
+
+        if(this.gameConfig.boardVariant === Variant.ENGLISH)
+            return new GameSchemaSolitaireEnglish(this.gameConfig);
+        return new GameSchemaSolitaireEuropean(this.gameConfig);
     }
-    public getSchemaManager(): GameSchemaManager<GameCell, GameSchema<GameCell>> {
+    public createSchemaManager(): GameSchemaManager<GameCell, GameSchema<GameCell>> {
         return new GameSchemaManagerSolitaire();
     }
 
-    public getSchemaSolver(): GameSchemaSolver<GameCell, GameSchema<GameCell>> | null {
+    public createSchemaSolver(): GameSchemaSolver<GameCell, GameSchema<GameCell>> | null {
         return null;
     }
 
-    public getSchemaGenerator(): GameSchemaGenerator<GameCell, GameSchema<GameCell>> | null {
+    public createSchemaGenerator(): GameSchemaGenerator<GameCell, GameSchema<GameCell>> | null {
         return null;
     }
 }

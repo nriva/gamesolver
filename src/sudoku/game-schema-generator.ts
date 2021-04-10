@@ -1,3 +1,4 @@
+import { GameConfig } from "../game-types/game-config";
 import { GameSchema } from "../game-types/game-schema";
 import { GameSchemaGenerator } from "../game-types/game-schema-generator";
 import { GameCellSudoku } from "./game-cell";
@@ -31,12 +32,13 @@ export class GameSchemaGeneratorSudoku extends GameSchemaGenerator<GameCellSudok
         this.squareSize = Math.floor(s);
     }
 
-    public generate(properties: any): GameSchemaSudoku {
+    public generate(gameConfig: GameConfig, properties: any): GameSchemaSudoku {
 
         this.missingDigits = properties.missingDigits;
 
         this.fillValues();
-        const schema = new GameSchemaSudoku();
+
+        const schema = new GameSchemaSudoku(gameConfig);
         schema.createCells()
         for(let row=0;row<this.size;row++)
             for(let col=0;col<this.size;col++) {

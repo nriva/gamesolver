@@ -1,7 +1,14 @@
 import { GameSchema } from "../game-types/game-schema";
 import { GameCellSolitaire } from "./game-cell";
 
-export class GameSchemaSolitaire extends GameSchema<GameCellSolitaire> {
+
+export enum Variant {
+    ENGLISH,
+    EUROPEAN
+}
+
+
+export abstract class GameSchemaSolitaire extends GameSchema<GameCellSolitaire> {
     lastMove: number[][] = [];
 
 
@@ -20,17 +27,13 @@ export class GameSchemaSolitaire extends GameSchema<GameCellSolitaire> {
         const data = {values: this.getValues() };
         return JSON.stringify(data);
     }
-    public initDemoCells(): void {
-        this.demoCellValues = [
-            [9, 9, 1, 1, 1, 9, 9],
-            [9, 9, 1, 1, 1, 9, 9],
-            [1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 0, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1],
-            [9, 9, 1, 1, 1, 9, 9],
-            [9, 9, 1, 1, 1, 9, 9]];
 
-    }
+
+
+
+    
+
+
 
     /*
     public clone(): GameSchema<GameCellSolitaire> {
@@ -38,34 +41,12 @@ export class GameSchemaSolitaire extends GameSchema<GameCellSolitaire> {
     }
     */
 
-    public createCells(): GameCellSolitaire[][] {
-        
-        let cells: GameCellSolitaire[][] = Array();
-        for(let r=0;r<7;r++) {
-            cells.push([]);
-            for(let c=0;c<7;c++) {
-                const cell = new GameCellSolitaire();
 
-                if(r<2 && c<2 || r>4 && c<2 || r<2 && c>4 || r>4 && c>4)
-                    cell.initValue(GameCellSolitaire.INVALID_CELL);
-                else if(r===3 && c===3)
-                    cell.initValue(GameCellSolitaire.EMPTY_CELL);
-                else
-                    cell.initValue(GameCellSolitaire.PEG_CELL);
-                cells[r].push( cell);
-            }
-        }
-        return cells;
-    }
 
     // private solver: GameSchemaSolverSolitaire = new GameSchemaSolverSolitaire();
 
-    constructor(demo: boolean = false) {
-
-        super(7,7, demo);
-        
-    }
-
+    protected middleRow = 0;
+    protected middleCol = 0;
 
 
     private moveByTarget: Map<string,number[][]> = new Map();
@@ -155,7 +136,7 @@ export class GameSchemaSolitaire extends GameSchema<GameCellSolitaire> {
 
     public canUndoMove(): boolean { return true; }
 
-
-
-   
 }
+
+
+

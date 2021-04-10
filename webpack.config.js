@@ -42,7 +42,23 @@ module.exports = {
           },
         ],
       },
-      
+      /*
+      {
+        test: /sudoku-deep-solver\.worker\.ts$/i,
+        loader: "worker-loader",
+        options: {
+          filename: "sudoku.worker.js",
+        },
+      },
+      {
+        test: /solitaire-deep-solver\.worker\.ts$/i,
+        loader: "worker-loader",
+        options: {
+          filename: "solitaire.worker.js",
+        },
+      },
+      */
+
       {
         test: /\.ts$/,
         use: [{
@@ -53,10 +69,22 @@ module.exports = {
         }],
         exclude: /node_modules/,
       },
+
+      /*
       {
           test: /\.worker\.ts$/,
           use: { loader: 'worker-loader' }
       }
+      */
+      /*
+      {
+        test: /solitaire\-deep\-solver\-worker\.js$/i,
+        loader: "worker-loader",
+        options: {
+          filename: "pippo.worker.js",
+        },
+      }
+      */
       /*{
       test: /\.html$/,
       exclude: /node_modules/,
