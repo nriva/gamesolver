@@ -267,25 +267,39 @@ function undoBtnClick() {
     refreshBoard();
 }
 
-
-localStorage.setItem("gamesolver.gamename", "SUDOKU" );
-
-const gamename = localStorage.getItem("gamesolver.gamename");
-
-
 const gameConfig: GameConfig = new GameConfig()
+let gamename = "SUDOKU";
+
+if(window.location.search) {
+
+    const qpos = window.location.search.indexOf('?');
+    if(qpos>-1) {
+      const parts = window.location.search.substring(qpos+1).split('&');
+      parts.forEach((part)=> {
+        const subs = part.split('=');
+        if(subs.length===2) {
+          switch(subs[0].trim()) {
+            case "g":
+                gamename = subs[1].trim();
+                break;
+          }
+        }
+      });
+    }
+}
 
 let factory: GameFactory;
 
-if(gamename==="SUDOKU") {
-    gameConfig.demo = true;
-    factory = new GameFactorySudoku(gameConfig);
-} else {
+if(gamename==="SOLITAIRE") {
 
     gameConfig.boardVariant = Variant.ENGLISH;
     gameConfig.demo = false;
     gameConfig.initialDisposition = EnglishIntialDisposition.FULL;
     factory = new GameFactorySolitarie(gameConfig);
+} else {
+    gameConfig.demo = true;
+    factory = new GameFactorySudoku(gameConfig);
+
 }
 
 
