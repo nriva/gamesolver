@@ -10,7 +10,7 @@ export class DeepSolverMatrixSudoku extends DeepSolverMatrix {
     private checker: GameSchemaCheckerSudoku = new GameSchemaCheckerSudoku();
 
 
-    public deepSolve(row: number, col: number): boolean {
+    public deepSolve(level:number, row: number, col: number, ...params:any[]): boolean {
 
         let c = col;
         let r = row;
@@ -55,7 +55,7 @@ export class DeepSolverMatrixSudoku extends DeepSolverMatrix {
             }
             // console.log(`${r},${c}: going deeper`);
             // is not solved: search again
-            if(this.deepSolve(r, c+1)) {
+            if(this.deepSolve(level+1, r, c+1)) {
                 // console.log(`${r},${c}: success/2!`);
                 ctx.postMessage({ 'eventType': 'setValue', eventData:{'row':r, 'col':c, 'value': value} });
                 return true;
@@ -81,7 +81,7 @@ ctx.addEventListener("message", (event) => {
     const matrix = event.data.matrix;
     solver = new DeepSolverMatrixSudoku(matrix);
     let solutionResult = "Resolution failed."
-    if(solver.deepSolve(0,0))
+    if(solver.deepSolve(0, 0, 0))
         solutionResult = "Recursive search succeeded.";
     ctx.postMessage({'eventType': 'success', 'matrix':matrix, 'solutionResult': solutionResult });
 });

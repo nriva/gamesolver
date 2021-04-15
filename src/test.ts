@@ -84,7 +84,7 @@ function testSolitaire() {
     // console.log(solver.hasIsolatedPegs(testCase));
     // schema.dump().forEach((e)=>console.log(e));
 
-    if(solver.deepSolve(0, 0)) {
+    if(solver.deepSolve(0, 0, 0)) {
         dump(matrix,7,7).forEach((e,i)=>(console.log(String(i+1)+":"+e)));
         console.log('Solved!');
     }

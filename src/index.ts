@@ -1,5 +1,6 @@
 import $ from "jquery";
 import "./style.css";
+import "./titactoe/style.css";
 
 // import "./sudoku/style.css";
 // import DeepSolveWorker from "worker-loader!./sudoku/deep-solver-worker";
@@ -16,6 +17,9 @@ import { GameSchemaGenerator } from "./game-types/game-schema-generator";
 import { Variant } from "./solitaire/game-schema";
 import { GameConfig } from "./game-types/game-config";
 import { EnglishIntialDisposition } from "./solitaire/game-schema-english";
+import { GameFactoryTicTacToe } from "./titactoe/game-factory";
+import { GamePlayerManager } from "./game-types/game-player-manager";
+import { GamePlayerCPURandom, GamePlayerCPUSmart, GamePlayerHuman } from "./titactoe/game-player";
 
 
 let schema: GameSchema<GameCell>;
@@ -267,6 +271,23 @@ function undoBtnClick() {
     refreshBoard();
 }
 
+function playBtnClick()
+{
+    playNextTurn();
+}
+
+let playTimeOut = 100;
+
+function playNextTurn() {
+    if(playerManager!=null) {
+        playerManager.playTurn();
+        refreshBoard();
+
+        if(playerManager.callNextPlayTurn())
+            setTimeout(playNextTurn,playTimeOut);
+    }
+}
+
 const gameConfig: GameConfig = new GameConfig()
 let gamename = "SUDOKU";
 
@@ -289,13 +310,14 @@ if(window.location.search) {
 }
 
 let factory: GameFactory;
-
 if(gamename==="SOLITAIRE") {
 
     gameConfig.boardVariant = Variant.ENGLISH;
     gameConfig.demo = false;
     gameConfig.initialDisposition = EnglishIntialDisposition.FULL;
     factory = new GameFactorySolitarie(gameConfig);
+} else if(gamename==="TICTACTOE") {
+    factory = new GameFactoryTicTacToe(gameConfig);
 } else {
     gameConfig.demo = true;
     factory = new GameFactorySudoku(gameConfig);
@@ -325,6 +347,20 @@ function canEdit(schemaManager: any) : schemaManager is GameSchemaManagerEditabl
         schemaManagerEdt = schemaManager as GameSchemaManagerEditable<GameCell,GameSchema<GameCell>>;
     return ok;
 }
+
+let playerManager: GamePlayerManager<GameCell,GameSchema<GameCell>>;
+
+function canPlay(schemaManager: any) : schemaManager is GamePlayerManager<GameCell,GameSchema<GameCell>> {
+
+    if(playerManager!=null)
+        return true;
+
+    const ok = typeof schemaManager.playTurn !=="undefined";
+    if(ok)
+        playerManager = schemaManager as GamePlayerManager<GameCell,GameSchema<GameCell>>;
+    return ok;
+}
+
 
 function canSimplify(): boolean {
     return solver!=null;
@@ -403,6 +439,30 @@ function init() {
         $('#editBtn').css('display','inline');
 
     }
+
+    if(canPlay(schemaManager)) {
+        $('#playBtn').css('display', 'inline');
+
+        let index = 0;
+
+        
+        const human1 = new GamePlayerHuman('Nicola 1', index++); playerManager.addPlayer(human1)
+        // const human2 = new GamePlayerHuman('Nicola2', index++); playerManager.addPlayer(human2)
+        
+        
+        // const cpu1 = new GamePlayerCPURandom('CPU Random 1', index++); playerManager.addPlayer(cpu1);
+        // const cpu2 = new GamePlayerCPURandom('CPU Random2', index++); playerManager.addPlayer(cpu2);
+
+        //const cpu1 = new GamePlayerCPUSmart('CPU Smart 1', index++); playerManager.addPlayer(cpu1);
+        const cpu2 = new GamePlayerCPUSmart('CPU Smart 2', index++); playerManager.addPlayer(cpu2);
+
+        //playTimeOut = 1000;
+        
+        playNextTurn();
+
+
+    }
+
     if(canSolve()) {
         $('#solveBtn').css('display','inline');
     }
@@ -427,6 +487,7 @@ function init() {
 
     $("#resetBtn").on("click", resetBtnClick );
     $("#solveBtn").on("click", solveBtnClick );
+    $("#playBtn").on("click", playBtnClick );
     $("#stopBtn").on("click", stopBtnClick );
     $("#pauseBtn").on("click", pauseBtnClick );
     $("#stepBtn").on("click", stepBtnClick );
@@ -449,6 +510,10 @@ function init() {
 
     $('.gametablecell').on('click', (e) => { 
         schemaManager.onCellClick(e, schema);
+        if(canPlay(schemaManager)) {
+            if(playerManager.callNextPlayTurn())
+                playNextTurn();
+        }
         refreshBoard();
     }
     );

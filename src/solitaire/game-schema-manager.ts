@@ -35,7 +35,7 @@ export class GameSchemaManagerSolitaire extends GameSchemaManager<GameCellSolita
             // content = `<img src="invalid.jpg">`;
             content = '';
         else if(_value===GameCellSolitaire.PEG_CELL)
-            content = `<img src="peg.gif">`
+            content = `<img src="img/solitaire/peg.gif">`
         else
             content = "<p></p>";
         cell.setDirtyOff();
@@ -56,7 +56,7 @@ export class GameSchemaManagerSolitaire extends GameSchemaManager<GameCellSolita
         if(value !== GameCellSolitaire.PEG_CELL)
             return;
 
-        const moves = GameMoveMakerSolitaire.findMoves( this.schema.getValues(), r,c);
+        const moves = this.moveMaker.findMoves( this.schema.getValues(), { row: r, col: c});
 
         if(moves.length===1)
             schema.executeMoves(moves);
@@ -68,6 +68,8 @@ export class GameSchemaManagerSolitaire extends GameSchemaManager<GameCellSolita
 
     }
 
+    private moveMaker = new GameMoveMakerSolitaire();
+
     public getStatusInfo(solver: GameSchemaSolver<GameCellSolitaire, GameSchemaSolitaire> | null): { statusInfo:string, solutionResult:string, checkResult:string } {
 
         const returnInfo = { statusInfo:'', solutionResult: '', checkResult: ''};
@@ -78,13 +80,13 @@ export class GameSchemaManagerSolitaire extends GameSchemaManager<GameCellSolita
         }
 
         if(returnInfo.statusInfo.length===0) {
-            const moves = GameMoveMakerSolitaire.findAllMoves( this.schema.getValues());
-            if(moves.moves.length===0) {
-                returnInfo.statusInfo= `No more possible moves, ${moves.pegs} remaining pegs.`;
-                if(moves.pegs===1) returnInfo.solutionResult = 'Solved!';
+            const moves = this.moveMaker.findAllMoves( this.schema.getValues());
+            if(moves.length===0) {
+                returnInfo.statusInfo= `No more possible moves, ${this.moveMaker.getPegs()} remaining pegs.`;
+                if(this.moveMaker.getPegs()===1) returnInfo.solutionResult = 'Solved!';
             }
             else
-                returnInfo.statusInfo = `${moves.moves.length} possibile moves, ${moves.pegs} remaining pegs.`;
+                returnInfo.statusInfo = `${moves.length} possibile moves, ${this.moveMaker.getPegs()} remaining pegs.`;
         }
 
         return returnInfo;

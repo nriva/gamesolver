@@ -6,7 +6,7 @@ ctx.addEventListener("message", (event) => {
     const matrix = event.data.matrix;
     const solver = new DeepSolverMatrixSolitaire(matrix,ctx);
     let solutionResult = "Resolution failed."
-    if(solver.deepSolve(1,3)) {
+    if(solver.deepSolve(0, 1, 3)) {
         solutionResult = "Recursive search succeeded.";
     }
     ctx.postMessage({'eventType': 'success'

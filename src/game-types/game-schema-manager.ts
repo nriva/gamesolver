@@ -1,7 +1,6 @@
 import { GameCell } from "./game-cell";
 import { GameSchema } from "./game-schema";
 import { GameSchemaSolver } from "./game-schema-solver";
-import { getClickedRowCol } from "./game-utils";
 
 export abstract class GameSchemaManager<C extends GameCell,T extends GameSchema<C>> {
 
@@ -10,6 +9,11 @@ export abstract class GameSchemaManager<C extends GameCell,T extends GameSchema<
     public setSchema(schema: T) {
         this.schema = schema;
     }
+
+    public getSchema(): T {
+        return this.schema;
+    }
+
 
     protected getCellAttributes(rowId:number, colId: number): any { return null; }
 
@@ -23,11 +27,16 @@ export abstract class GameSchemaManager<C extends GameCell,T extends GameSchema<
 
     }
 
+    public getTableCellClasses(rowId:number, colId:number, attributes:any): string[] {
+        const classes = ["gametablecell"];
+        if(attributes?.border)
+            classes.push(" gametablecellborder");
+        return classes;
+    }
+
     public getGameTableCell(rowId:number, colId:number, attributes:any): string {
 
-        let classes = "gametablecell";
-        if(attributes?.border)
-            classes += " gametablecellborder";
+        const classes = this.getTableCellClasses(rowId, colId, attributes).join(" ");
         return `<div class="${classes}"><span class="cellValue" id="cell${rowId+1}${colId+1}"></span></div>`;
 
     }

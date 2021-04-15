@@ -6,6 +6,6 @@ export abstract class DeepSolverMatrix {
         this.matrix = matrix;
     }
 
-    public abstract deepSolve(row: number, col: number): boolean;
+    public abstract deepSolve(level:number, row: number, col: number, ...params:any[]): boolean;
 
 }

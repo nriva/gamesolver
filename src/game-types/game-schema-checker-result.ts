@@ -19,4 +19,15 @@ export class GameSchemaCheckerResult {
     public set error(value: boolean) {
         this.err = value;
     }
+
+    private sts = 0;
+
+    public get status(): number {
+        return this.sts;
+    }
+
+    public set status(value: number) {
+        this.sts = value;
+    }
+
 }

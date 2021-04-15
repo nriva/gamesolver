@@ -1,4 +1,5 @@
 import { DeepSolverMatrix } from "../game-types/deep-solve";
+import { GameMoveMaker } from "../game-types/game-move-maker";
 import { GameSchemaSolver } from "../game-types/game-schema-solver";
 import { GameCellSolitaire } from "./game-cell";
 import { GameSchemaSolitaire } from "./game-schema";
@@ -122,11 +123,17 @@ export class GameSchemaSolverSolitaire extends GameSchemaSolver<GameCellSolitair
 
 } */
 
-export class GameMoveMakerSolitaire {
+export class GameMoveMakerSolitaire implements GameMoveMaker {
 
-    public static findMoves(cellValues:number[][],r:number,c:number):number[][][] {
+
+    // findMoves(cellValues:number[][], conditions:any):number[][][];
+
+    public findMoves(cellValues:number[][], conditions:any):number[][][] {
         const moves:number[][][] = [];
         let value;
+
+        let r = conditions.row;
+        let c = conditions.col;
 
         //                                  1
         // find all the moves from x=r,c: 2 x 3
@@ -187,22 +194,29 @@ export class GameMoveMakerSolitaire {
         return moves;
     }
 
-    public static findAllMoves(cellValues:number[][]):{pegs:number,moves:number[][][]} {
+    // findAllMoves(cellValues:number[][]):number[][][];    
+
+
+    private pegs:number=0;
+    public getPegs(): number {return this.pegs}
+
+    public findAllMoves(cellValues:number[][]):number[][][] {
         let allMoves: number[][][] = [];
         let pegNum = 0;
         for(let r=0;r<7;r++)
             for(let c=0;c<7;c++)
                 if(cellValues[r][c] === GameCellSolitaire.PEG_CELL) {
                     pegNum++;
-                    const moves = this.findMoves(cellValues, r,c);
+                    const moves = this.findMoves(cellValues,{row:r, col:c});
                     if(moves.length>0)
                         allMoves = allMoves.concat(moves);
 
                 }
-        return {'pegs': pegNum, 'moves':allMoves};
+        this.pegs = pegNum;
+        return allMoves;
     }
 
-    public static executeMove(cellValues:number[][], move: number[][]): boolean {
+    public executeMove(cellValues:number[][], move: number[][]): boolean {
 
         if(move.length===0)
             return false;
@@ -228,7 +242,7 @@ export class GameMoveMakerSolitaire {
 
     }
 
-    public static undoMove(cellValues:number[][], move: number[][]):void {
+    public undoMove(cellValues:number[][], move: number[][]):void {
 
         if(move.length===0)
             return;
@@ -262,6 +276,8 @@ export class DeepSolverMatrixSolitaire extends DeepSolverMatrix {
     private ctx:any;
 
     private step = 0;
+
+    private moveMaker = new GameMoveMakerSolitaire();
 
     constructor(matrix: number[][], ctx:any) {
         super(matrix);
@@ -317,7 +333,7 @@ export class DeepSolverMatrixSolitaire extends DeepSolverMatrix {
     }    
 
 
-    public deepSolve(row: number, col: number): boolean {
+    public deepSolve(level:number, row: number, col: number, ...params:any[]): boolean {
 
         // pruning
         const isolated = this.hasIsolatedPegs(this.matrix);
@@ -331,14 +347,14 @@ export class DeepSolverMatrixSolitaire extends DeepSolverMatrix {
 
 
 
-        const allMoves = GameMoveMakerSolitaire.findAllMoves(this.matrix);
-        if(allMoves.pegs===1)
+        const moves = this.moveMaker.findAllMoves(this.matrix);
+        if(this.moveMaker.getPegs()===1)
             return true;
-        const moves = allMoves.moves;
+
 
 
         for(let m=0; m<moves.length; m++) {
-            if(GameMoveMakerSolitaire.executeMove(this.matrix, moves[m])) {
+            if(this.moveMaker.executeMove(this.matrix, moves[m])) {
                 const from = moves[m][0];
                 const middle = moves[m][1];
                 const to = moves[m][2];
@@ -347,7 +363,7 @@ export class DeepSolverMatrixSolitaire extends DeepSolverMatrix {
                 this.ctx?.postMessage({ 'eventType': 'tryValue', eventData:{'row': middle[0], 'col': middle[1], 'value': GameCellSolitaire.EMPTY_CELL }});
                 this.ctx?.postMessage({ 'eventType': 'tryValue', eventData:{'row': to[0], 'col': to[1], 'value': GameCellSolitaire.PEG_CELL }});
                 */
-                if(this.deepSolve(row+1, col)) {
+                if(this.deepSolve(level+1, row, col)) {
                     /*
                     this.ctx?.postMessage({ 'eventType': 'setValue', eventData:{'row': from[0], 'col': from[1], 'value': GameCellSolitaire.EMPTY_CELL }});
                     this.ctx?.postMessage({ 'eventType': 'setValue', eventData:{'row': middle[0], 'col': middle[1], 'value': GameCellSolitaire.EMPTY_CELL }});
@@ -356,7 +372,7 @@ export class DeepSolverMatrixSolitaire extends DeepSolverMatrix {
                     this.solvingMoves.push(moves[m]);
                     return true;
                 } else {
-                    GameMoveMakerSolitaire.undoMove(this.matrix, moves[m]);
+                    this.moveMaker.undoMove(this.matrix, moves[m]);
                     /*
                     this.ctx?.postMessage({ 'eventType': 'undoValue', eventData:{'row': from[0], 'col': from[1], 'value': GameCellSolitaire.PEG_CELL }});
                     this.ctx?.postMessage({ 'eventType': 'undoValue', eventData:{'row': middle[0], 'col': middle[1], 'value': GameCellSolitaire.PEG_CELL }});
