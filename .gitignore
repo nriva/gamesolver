@@ -5,5 +5,5 @@ src/test.js
 !serve.js
 src/game-types/*.js
 src/sudoku/*.js
-src/game-types/*.js
+src/tictactoe/*.js
 src/solitaire/*.js
