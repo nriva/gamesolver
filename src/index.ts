@@ -1,6 +1,6 @@
 import $ from "jquery";
 import "./style.css";
-import "./titactoe/style.css";
+import "./tictactoe/style.css";
 
 // import "./sudoku/style.css";
 // import DeepSolveWorker from "worker-loader!./sudoku/deep-solver-worker";
@@ -17,9 +17,9 @@ import { GameSchemaGenerator } from "./game-types/game-schema-generator";
 import { Variant } from "./solitaire/game-schema";
 import { GameConfig } from "./game-types/game-config";
 import { EnglishIntialDisposition } from "./solitaire/game-schema-english";
-import { GameFactoryTicTacToe } from "./titactoe/game-factory";
+import { GameFactoryTicTacToe } from "./tictactoe/game-factory";
 import { GamePlayerManager } from "./game-types/game-player-manager";
-import { GamePlayerCPURandom, GamePlayerCPUSmart, GamePlayerHuman } from "./titactoe/game-player";
+import { GamePlayerCPURandom, GamePlayerCPUSmart, GamePlayerHuman } from "./tictactoe/game-player";
 
 
 let schema: GameSchema<GameCell>;
