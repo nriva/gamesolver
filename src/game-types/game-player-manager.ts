@@ -11,7 +11,7 @@ export abstract class GamePlayer<C extends GameCell,T extends GameSchema<C>> {
 
     protected index = 0;
 
-    protected name:string="";
+    protected name = "";
 
     protected kind: PlayerKind;
 

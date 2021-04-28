@@ -35,7 +35,7 @@ export class GameSchemaManagerSolitaire extends GameSchemaManager<GameCellSolita
             // content = `<img src="invalid.jpg">`;
             content = '';
         else if(_value===GameCellSolitaire.PEG_CELL)
-            content = `<img src="img/solitaire/peg.gif">`
+            content = `<img src="img/solitaire/ball.png">`
         else
             content = "<p></p>";
         cell.setDirtyOff();

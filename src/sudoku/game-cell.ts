@@ -5,7 +5,7 @@ export class GameCellSudoku extends GameCell {
 
     private values: number[];
 
-    private proposedValue: number=0;
+    private proposedValue=0;
 
     private savedValues: number[] = [];
 
@@ -51,7 +51,7 @@ export class GameCellSudoku extends GameCell {
      * Init the value and the valueSet of the cell.
      * @param value the value
      */
-    public initValue(value: number) {
+    public initValue(value: number): void {
         super.initValue(value);
         if(value === 0)
             this.values = Object.assign([], this.ALL_VALUES);
@@ -64,7 +64,7 @@ export class GameCellSudoku extends GameCell {
      * Copy value and set of possibile values from another cell
      * @param other the cell to copy from
      */
-    public copyFrom(other: GameCell) {
+    public copyFrom(other: GameCell): void {
         super.copyFrom(other);
         this.values = Object.assign([], (other as GameCellSudoku).values);
 

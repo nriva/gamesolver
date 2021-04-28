@@ -63,7 +63,7 @@ export class GameSchemaSolverSudoku extends GameSchemaSolver<GameCellSudoku, Gam
         this.lastSolvedCells = simplifyResult.solved;
 
 
-        const result = this.checker.check(schema);
+        const result = this.checker.check(schema, null);
 
 
         if(!result.error) {

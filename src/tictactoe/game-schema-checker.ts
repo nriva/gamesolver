@@ -149,7 +149,7 @@ export class GameSchemaCheckerTicTacToe implements GameSchemaChecker<GameCellTic
     }
 
 
-    check(schema: GameSchemaTicTacToe, parameters?: {} | null): GameSchemaCheckerResult {
+    check(schema: GameSchemaTicTacToe, parameters: any): GameSchemaCheckerResult {
         const cells = schema.getValues();
         const result = this.checkMatrix(cells, parameters);
         if(result.status === ChekResultTictacToe.RESULT_ONE_TO_WIN_PLAYER1 || result.status === ChekResultTictacToe.RESULT_ONE_TO_WIN_PLAYER2)
@@ -157,7 +157,7 @@ export class GameSchemaCheckerTicTacToe implements GameSchemaChecker<GameCellTic
         return result;
     }
 
-    checkMatrix(values:number[][], parameters?: {} | null): GameSchemaCheckerResult {
+    checkMatrix(values:number[][], parameters: any): GameSchemaCheckerResult {
 
         const result: GameSchemaCheckerResult =  new GameSchemaCheckerResult();
         result.status = ChekResultTictacToe.RESULT_UNFINISHED;

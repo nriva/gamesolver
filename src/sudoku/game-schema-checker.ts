@@ -6,15 +6,18 @@ import { GameSchemaSudoku } from "./game-schema";
 
 export class GameSchemaCheckerSudoku implements GameSchemaChecker<GameCellSudoku, GameSchemaSudoku> {
 
-    private incomplete: boolean = false;
+    private incomplete = false;
 
-    private resultMessage: string = "";
+    private resultMessage = "";
 
-    public check(schema: GameSchemaSudoku, incomplete: boolean=false): GameSchemaCheckerResult {
+    public check(schema: GameSchemaSudoku, parameters: any): GameSchemaCheckerResult {
+        let incomplete = false;
+        if(parameters!=null && typeof parameters.incomplete !== "undefined")
+            incomplete = parameters.incomplete;
         return this.checkMatrix(schema.getValues(), incomplete);
     }
 
-    public checkMatrix(matrix: number[][], incomplete: boolean=false): GameSchemaCheckerResult {
+    public checkMatrix(matrix: number[][], incomplete=false): GameSchemaCheckerResult {
 
         this.incomplete =incomplete;
 

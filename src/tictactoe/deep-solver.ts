@@ -67,7 +67,7 @@ export class DeepSolverMatrixTicTacToe extends DeepSolverMatrix {
             topLevelMove = params[1];
         }
 
-        const result = this.checker.checkMatrix(cells);
+        const result = this.checker.checkMatrix(cells, null);
         if(level>0) {
             if((result.status === ChekResultTictacToe.RESULT_WIN_PLAYER1 && this.targetPlayerIndex===1)
                 ||

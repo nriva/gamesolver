@@ -39,7 +39,7 @@ export class GameSchemaManagerTicTacToe
             player.beginMove();
         } else if(player.getKind()=== PlayerKind.CPU) {
             player.makeMove(this);
-            this.lastResult = this.checker.check(this.schema);
+            this.lastResult = this.checker.check(this.schema, null);
             if(this.lastResult?.status===ChekResultTictacToe.RESULT_UNFINISHED) {
                 this.nextTurn();
                 this.callNextPlayImmediatelly = true;
@@ -70,7 +70,7 @@ export class GameSchemaManagerTicTacToe
                 cell.setValue(GameCellTicTacToe.PLAYER1_CELL);
             else
                 cell.setValue(GameCellTicTacToe.PLAYER2_CELL);
-            this.lastResult = this.checker.check(schema);
+            this.lastResult = this.checker.check(schema, null);
             if(this.lastResult.status === ChekResultTictacToe.RESULT_UNFINISHED)
                 this.nextTurn();
         }
