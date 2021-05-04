@@ -8,7 +8,6 @@
     display: none;
 }
 
-
 .gametablerow, .gametablerowedt {
     display:table-row;
     border-collapse: collapse;
@@ -27,11 +26,14 @@
     overflow: hidden;
 
     position: relative;
+
+    color: azure
 }
 
 .gametablecellborder {
     border-width: 1px;
-    border-color: black;
+    /*border-color: black;*/
+    border-color: azure;
     border-style: solid;
     border-collapse: collapse;
 }
@@ -73,17 +75,35 @@
 }
 
 .highlight {
-    background-color: greenyellow;
+    background-color: green;
+    color: black;
 }
 
 .tried {
     background-color: orange;
+    color: azure
 }
 
 .failed {
     background-color: red;
+    color: azure
 }
 
 .animation-btn {
     display: none;
+}
+
+h1, #gameStatusInfo {
+    color: azure;
+}
+
+body {
+    background-color: darkslategray;
+}
+
+.versionInfo {
+    margin-top: 50px; 
+    display: block; 
+    text-align: right; 
+    color: azure
 }

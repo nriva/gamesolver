@@ -31,11 +31,6 @@ export class GameFactorySudoku extends GameFactory {
 
     public createSolutionWorker() {
         return new DeepSolveWorkerSudoku();
-
-
-
-
-        
     }
 
 }
